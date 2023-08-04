@@ -11,7 +11,7 @@ LITE_MODE = "lite" in PACKAGE_NAME
 
 AUTOGLUON_ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", ".."))
 
-PYTHON_REQUIRES = ">=3.8, <3.11"
+PYTHON_REQUIRES = ">=3.6, <3.11"
 
 
 # Only put packages here that would otherwise appear multiple times across different module's setup.py files.
@@ -19,7 +19,7 @@ DEPENDENT_PACKAGES = {
     # note: if python 3.7 is used, the open CVEs are present: CVE-2021-41496 | CVE-2021-34141; fixes are available in 1.22.x, but python 3.8 only
     "boto3": ">=1.10,<2",  # <2 because unlikely to introduce breaking changes in minor releases. >=1.10 because 1.10 is 3 years old, no need to support older
     "numpy": ">=1.21,<1.27",  # "<{N+3}" upper cap, where N is the latest released minor version, assuming no warnings using N
-    "pandas": ">=1.4.1",  # "<{N+1}" upper cap
+    # "pandas": ">=1.4.1",  # "<{N+1}" upper cap
     "scikit-learn": ">=1.0,<1.3",  # "<{N+1}" upper cap
     "scipy": ">=1.5.4,<1.12",  # "<{N+2}" upper cap
     "psutil": ">=5.7.3,<6",  # Major version cap
