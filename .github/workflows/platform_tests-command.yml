@@ -207,6 +207,7 @@ jobs:
           where python
           pip install virtualenv
           conda install --channel conda-forge pygraphviz
+          lsvirtualenv
           chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
 
   # install:
