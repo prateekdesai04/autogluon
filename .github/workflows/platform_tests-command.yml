@@ -209,6 +209,7 @@ jobs:
           conda install --channel conda-forge pygraphviz
           echo "Printing Conda envs"
           conda env list
+          conda activate autogluon_py3
           chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
 
   # install:
