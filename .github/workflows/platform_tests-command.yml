@@ -206,6 +206,8 @@ jobs:
           echo "Python Version"
           python --version
           which python
+          echo "Conda Env List"
+          conda env list
           conda install --channel conda-forge pygraphviz
           chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
 

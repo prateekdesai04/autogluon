@@ -5,6 +5,11 @@ set -ex
 echo "Python Version in tabular"
 python --version
 
+echo "The path is: $PATH"
+
+echo "Conda Env List"
+conda env list
+
 ADDITIONAL_TEST_ARGS=$1
 IS_PLATFORM_TEST=$2
 
