@@ -2,15 +2,7 @@
 
 set -ex
 
-echo "Python Version in tabular"
-python --version
-
-echo "The path is: $PATH"
-
-cd C:/Miniconda/envs/autogluon_py3/Scripts
-ls
-echo "Conda Env List"
-conda env list
+activate autogluon_py3
 
 ADDITIONAL_TEST_ARGS=$1
 IS_PLATFORM_TEST=$2
