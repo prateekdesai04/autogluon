@@ -7,6 +7,8 @@ python --version
 
 echo "The path is: $PATH"
 
+cd C:/Miniconda/envs/autogluon_py3/Scripts
+ls
 echo "Conda Env List"
 conda env list
 
