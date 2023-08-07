@@ -2,6 +2,9 @@
 
 set -ex
 
+python3 --version
+pip --version
+
 ADDITIONAL_TEST_ARGS=$1
 IS_PLATFORM_TEST=$2
 
