@@ -201,11 +201,6 @@ jobs:
           rm libomp.rb
       - name: unit-test
         shell: bash -l {0}
-        if1: matrix.os != 'windows-2019'
-        run: |
-          conda install --channel conda-forge pygraphviz
-          chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
-        if2: matrix.os == 'windows-2019'
         run: |
           python3 --version
           pip --version
