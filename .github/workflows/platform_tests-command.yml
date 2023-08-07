@@ -202,7 +202,7 @@ jobs:
       - name: unit-test
         shell: bash -l {0}
         run: |
-          set PYTHONPATH=%PYTHONPATH%;C:\Miniconda\envs\autogluon_py3\python.exe
+          set PYTHONPATH=%PYTHONPATH%;C:/Miniconda/envs/autogluon_py3/python.exe
           echo "Python Version"
           python --version
           which python
