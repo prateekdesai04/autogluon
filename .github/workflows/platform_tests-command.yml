@@ -201,10 +201,10 @@ jobs:
           rm libomp.rb
       - name: unit-test
         run: |
+          echo "PATH: ${{ env.PATH }}"
+          echo "CONDA_PREFIX: ${{ env.CONDA_PREFIX }}"
+          echo "CONDA_DEFAULT_ENV: ${{ env.CONDA_DEFAULT_ENV }}"
           if [ "RUNNER_OS" == "Windows" ]; then
-            echo "PATH: $PATH"
-            echo "CONDA_PREFIX: $CONDA_PREFIX"
-            echo "CONDA_DEFAULT_ENV: $CONDA_DEFAULT_ENV"
             conda install -c conda-forge pygraphviz
             ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
           else
