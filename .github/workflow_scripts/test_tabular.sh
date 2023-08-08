@@ -2,8 +2,6 @@
 
 set -ex
 
-activate autogluon_py3
-
 ADDITIONAL_TEST_ARGS=$1
 IS_PLATFORM_TEST=$2
 
