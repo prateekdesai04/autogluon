@@ -203,13 +203,8 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "PATH: $env:PATH"
-          if [ "RUNNER_OS" == "Windows" ]; then
-            conda install -c conda-forge pygraphviz
-            ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
-          else
-            conda install --channel conda-forge pygraphviz
-            chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
-          fi
+          conda install --channel conda-forge pygraphviz
+          chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
 
   # install:
   #   needs: setup
