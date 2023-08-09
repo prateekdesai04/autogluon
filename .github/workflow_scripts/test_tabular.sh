@@ -5,6 +5,10 @@ set -ex
 ADDITIONAL_TEST_ARGS=$1
 IS_PLATFORM_TEST=$2
 
+echo "Python Tabular version"
+python --version
+python3 --version
+
 source $(dirname "$0")/env_setup.sh
 
 setup_build_env

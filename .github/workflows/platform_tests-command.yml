@@ -202,6 +202,9 @@ jobs:
       - name: unit-test
         shell: bash -l {0}
         run: |
+          echo "Python Version"
+          python --version
+          python3 --version
           conda install --channel conda-forge pygraphviz
           chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
 
