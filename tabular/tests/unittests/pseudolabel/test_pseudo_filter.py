@@ -3,9 +3,11 @@ import inspect
 import numpy as np
 import pandas
 import pandas as pd
+from datetime import datetime
 
 from autogluon.core.pseudolabeling.pseudolabeling import filter_pseudo
 
+start_time = datetime.now()
 
 def get_default_args(func):
     signature = inspect.signature(func)
@@ -63,3 +65,7 @@ def test_classification_pseudofilter():
 
     pseudo_idxes = filter_pseudo(y_reg_fake, "binary")
     assert len(pseudo_idxes) == len(pseudo_indices_ans)
+
+
+end_time = datetime.now()
+print('Duration: {}'.format(end_time - start_time))
