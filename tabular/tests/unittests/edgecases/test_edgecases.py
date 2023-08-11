@@ -3,6 +3,10 @@ import shutil
 from autogluon.core.constants import BINARY
 from autogluon.core.metrics import METRICS
 
+from datetime import datetime
+
+start_time = datetime.now()
+
 
 def test_no_weighted_ensemble(fit_helper):
     """Tests that fit_weighted_ensemble=False works"""
@@ -113,3 +117,6 @@ def test_use_bag_holdout_calibrate(fit_helper):
         expected_model_count=2,
         refit_full=False,
     )
+
+end_time = datetime.now()
+print('Duration: {}'.format(end_time - start_time))

@@ -5,6 +5,11 @@ from autogluon.core.hpo.executors import CustomHpoExecutor, RayHpoExecutor
 from autogluon.core.models.ensemble.bagged_ensemble_model import BaggedEnsembleModel
 from autogluon.tabular.models import AbstractModel
 
+from datetime import datetime
+
+start_time = datetime.now()
+
+
 
 class DummyBaseModel(AbstractModel):
     def __init__(self, minimum_resources=None, default_resources=None, **kwargs):
@@ -226,3 +231,6 @@ def test_hpo_without_bagging_no_resources_per_trial(mock_system_resources_ctx_mg
         elif executor_cls == CustomHpoExecutor:
             # custom backend use all resources for one trial
             assert executor.hyperparameter_tune_kwargs["resources_per_trial"] == {"num_cpus": 8, "num_gpus": 1}
+
+end_time = datetime.now()
+print('Duration: {}'.format(end_time - start_time))

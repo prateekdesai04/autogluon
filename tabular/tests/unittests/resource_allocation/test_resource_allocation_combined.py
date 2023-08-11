@@ -12,6 +12,10 @@ from autogluon.core.models.ensemble.fold_fitting_strategy import (
 )
 from autogluon.tabular.models import AbstractModel
 
+from datetime import datetime
+
+start_time = datetime.now()
+
 
 class DummyBaseModel(AbstractModel):
     def __init__(self, minimum_resources=None, default_resources=None, **kwargs):
@@ -1008,3 +1012,6 @@ def test_resource_allocation_combined_valid(mock_system_resources_ctx_mgr, test_
             _test_functionality(mock_system_resources_ctx_mgr=mock_system_resources_ctx_mgr, test_args=test_args)
     else:
         _test_functionality(mock_system_resources_ctx_mgr=mock_system_resources_ctx_mgr, test_args=test_args)
+
+end_time = datetime.now()
+print('Duration: {}'.format(end_time - start_time))

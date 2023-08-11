@@ -4,6 +4,10 @@ from autogluon.common.utils.resource_utils import ResourceManager
 from autogluon.core.models.ensemble.bagged_ensemble_model import BaggedEnsembleModel
 from autogluon.tabular.models import AbstractModel
 
+from datetime import datetime
+
+start_time = datetime.now()
+
 
 class DummyBaseModel(AbstractModel):
     def __init__(self, minimum_resources={}, **kwargs):
@@ -226,3 +230,7 @@ def test_nonbagged_model_without_total_resources_and_without_model_resources(moc
             "num_gpus": min(default_model_num_gpus, ResourceManager.get_gpu_count_all()),
         }
         assert resources == default_model_resources
+
+end_time = datetime.now()
+print('Duration: {}'.format(end_time - start_time))
+

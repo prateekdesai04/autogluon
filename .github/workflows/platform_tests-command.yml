@@ -205,9 +205,6 @@ jobs:
           echo "Python Version"
           python --version
           python3 --version
-          echo "Location Where Python"
-          where python
-          where python3
           conda install --channel conda-forge pygraphviz
           chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
 
