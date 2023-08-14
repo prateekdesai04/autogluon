@@ -735,37 +735,37 @@ def test_tabularHPObagstack():
     run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
 
 
-def test_tabularHPO():
-    ############ Benchmark options you can set: ########################
-    perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
-    seed_val = 99  # random seed
-    subsample_size = None
-    hyperparameter_tune_kwargs = {"scheduler": "local", "searcher": "auto"}
-    verbosity = 2  # how much output to print
-    hyperparameters = None
-    time_limit = None
-    fast_benchmark = True  # False
-    # If True, run a faster benchmark (subsample training sets, less epochs, etc),
-    # otherwise we run full benchmark with default AutoGluon settings.
-    # performance_value warnings are disabled when fast_benchmark = True.
+# def test_tabularHPO():
+#     ############ Benchmark options you can set: ########################
+#     perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
+#     seed_val = 99  # random seed
+#     subsample_size = None
+#     hyperparameter_tune_kwargs = {"scheduler": "local", "searcher": "auto"}
+#     verbosity = 2  # how much output to print
+#     hyperparameters = None
+#     time_limit = None
+#     fast_benchmark = True  # False
+#     # If True, run a faster benchmark (subsample training sets, less epochs, etc),
+#     # otherwise we run full benchmark with default AutoGluon settings.
+#     # performance_value warnings are disabled when fast_benchmark = True.
 
-    #### If fast_benchmark = True, can control model training time here. Only used if fast_benchmark=True ####
-    if fast_benchmark:
-        subsample_size = 100
-        time_limit = 240
-        hyperparameter_tune_kwargs["num_trials"] = 5
+#     #### If fast_benchmark = True, can control model training time here. Only used if fast_benchmark=True ####
+#     if fast_benchmark:
+#         subsample_size = 100
+#         time_limit = 240
+#         hyperparameter_tune_kwargs["num_trials"] = 5
 
-    fit_args = {
-        "verbosity": verbosity,
-    }
-    if hyperparameter_tune_kwargs is not None:
-        fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
-    if hyperparameters is not None:
-        fit_args["hyperparameters"] = hyperparameters
-    if time_limit is not None:
-        fit_args["time_limit"] = time_limit
-    ###################################################################
-    run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
+#     fit_args = {
+#         "verbosity": verbosity,
+#     }
+#     if hyperparameter_tune_kwargs is not None:
+#         fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
+#     if hyperparameters is not None:
+#         fit_args["hyperparameters"] = hyperparameters
+#     if time_limit is not None:
+#         fit_args["time_limit"] = time_limit
+#     ###################################################################
+#     run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
 
 
 @pytest.mark.slow
