@@ -9,8 +9,6 @@ echo "Python Tabular version"
 python --version
 python3 --version
 
-pip install pytest-timer
-
 source $(dirname "$0")/env_setup.sh
 
 setup_build_env
@@ -34,7 +32,7 @@ fi
 cd tabular/
 if [ -n "$ADDITIONAL_TEST_ARGS" ]
 then
-    python -m pytest -s -v --junitxml=results.xml --runslow --timer top -o junit_suit_name=MyTestSuite "$ADDITIONAL_TEST_ARGS" tests
+    python -m pytest -s -v --junitxml=results.xml --runslow --durations=3 "$ADDITIONAL_TEST_ARGS" tests
 else
-    python -m pytest -s -v --junitxml=results.xml --runslow --timer top -o junit_suit_name=MyTestSuite tests
+    python -m pytest -s -v --junitxml=results.xml --runslow --durations=3 tests
 fi
