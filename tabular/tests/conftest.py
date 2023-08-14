@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from typing import List
 
 import pytest
+import time
 
 from autogluon.common.utils.path_converter import PathConverter
 from autogluon.common.utils.resource_utils import ResourceManager
@@ -15,6 +16,15 @@ from autogluon.core.utils import download, generate_train_test_split, infer_prob
 from autogluon.features.generators import AutoMLPipelineFeatureGenerator
 from autogluon.tabular import TabularDataset, TabularPredictor
 
+
+@pytest.fixture(autouse=True)
+def time_it(request):
+    start_time = time.time()
+    yield
+    end_time = time.time()
+    test_name = request.node.name
+    elapsed_time = end_time - start_time
+    print(f"Test '{test_name} took {elapsed_time:.2f} seconds to run.")
 
 def pytest_addoption(parser):
     parser.addoption("--runslow", action="store_true", default=False, help="run slow tests")
