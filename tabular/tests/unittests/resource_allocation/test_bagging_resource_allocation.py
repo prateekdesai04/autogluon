@@ -10,6 +10,9 @@ from autogluon.core.models.ensemble.fold_fitting_strategy import (
     SequentialLocalFoldFittingStrategy,
 )
 from autogluon.tabular.models import AbstractModel
+from datetime import datetime
+
+start_time = datetime.now()
 
 
 class DummyBaseModel(AbstractModel):
@@ -190,3 +193,6 @@ def test_sequential_bagging_no_resources_per_fold():
     assert fold_fitting_strategy.num_cpus == 8
     assert fold_fitting_strategy.num_gpus == 1
     assert fold_fitting_strategy.user_resources_per_job == None
+
+end_time = datetime.now()
+print('Duration: {}'.format(end_time - start_time))

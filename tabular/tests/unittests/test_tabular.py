@@ -35,6 +35,10 @@ from autogluon.core.constants import BINARY, MULTICLASS, PROBLEM_TYPES_CLASSIFIC
 from autogluon.core.utils import download, unzip
 from autogluon.tabular import TabularDataset, TabularPredictor
 
+from datetime import datetime
+
+start_time = datetime.now()
+
 PARALLEL_LOCAL_BAGGING = "parallel_local"
 SEQUENTIAL_LOCAL_BAGGING = "sequential_local"
 
@@ -1147,3 +1151,6 @@ def test_tabular_log_to_file():
 
     with pytest.raises(AssertionError):
         TabularPredictor.load_log()
+
+end_time = datetime.now()
+print('Duration: {}'.format(end_time - start_time))

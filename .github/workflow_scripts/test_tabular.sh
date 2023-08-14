@@ -5,6 +5,10 @@ set -ex
 ADDITIONAL_TEST_ARGS=$1
 IS_PLATFORM_TEST=$2
 
+echo "Python Tabular version"
+python --version
+python3 --version
+
 source $(dirname "$0")/env_setup.sh
 
 setup_build_env
@@ -28,7 +32,7 @@ fi
 cd tabular/
 if [ -n "$ADDITIONAL_TEST_ARGS" ]
 then
-    python3 -m pytest --junitxml=results.xml --runslow "$ADDITIONAL_TEST_ARGS" tests
+    python -m pytest -s -v --junitxml=results.xml --runslow --durations=10 "$ADDITIONAL_TEST_ARGS" tests
 else
-    python3 -m pytest --junitxml=results.xml --runslow tests
+    python -m pytest -s -v --junitxml=results.xml --runslow --durations=10 tests
 fi

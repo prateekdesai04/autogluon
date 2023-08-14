@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from typing import List
 
 import pytest
+import time
 
 from autogluon.common.utils.path_converter import PathConverter
 from autogluon.common.utils.resource_utils import ResourceManager

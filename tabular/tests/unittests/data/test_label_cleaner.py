@@ -2,6 +2,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from datetime import datetime
+
+start_time = datetime.now()
+
 from autogluon.core.constants import BINARY, MULTICLASS, REGRESSION, SOFTCLASS
 from autogluon.core.data.label_cleaner import (
     LabelCleaner,
@@ -10,6 +14,7 @@ from autogluon.core.data.label_cleaner import (
     LabelCleanerMulticlass,
     LabelCleanerMulticlassToBinary,
 )
+
 
 
 def test_label_cleaner_binary():
@@ -223,3 +228,7 @@ def test_label_softclass():
     assert input_labels.equals(label_cleaner.transform(input_labels))
     assert input_labels.equals(label_cleaner.inverse_transform(input_labels))
     assert label_cleaner.num_classes == 6
+
+
+end_time = datetime.now()
+print('Duration: {}'.format(end_time - start_time))
