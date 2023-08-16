@@ -437,154 +437,154 @@ def get_benchmark_sets():
     return [toyregres_dataset, binary_dataset, regression_dataset, multi_dataset]
 
 
-# def run_tabular_benchmarks(fast_benchmark, subsample_size, perf_threshold, seed_val, fit_args, dataset_indices=None, run_distill=False, crash_in_oof=False):
-#     print("Running fit with args:")
-#     print(fit_args)
-#     # Each train/test dataset must be located in single directory with the given names.
-#     train_file = "train_data.csv"
-#     test_file = "test_data.csv"
-#     EPS = 1e-10
+def run_tabular_benchmarks(fast_benchmark, subsample_size, perf_threshold, seed_val, fit_args, dataset_indices=None, run_distill=False, crash_in_oof=False):
+    print("Running fit with args:")
+    print(fit_args)
+    # Each train/test dataset must be located in single directory with the given names.
+    train_file = "train_data.csv"
+    test_file = "test_data.csv"
+    EPS = 1e-10
 
-#     # List containing dicts for each dataset to include in benchmark (try to order based on runtimes)
-#     datasets = get_benchmark_sets()
-#     if dataset_indices is not None:  # only run some datasets
-#         datasets = [datasets[i] for i in dataset_indices]
+    # List containing dicts for each dataset to include in benchmark (try to order based on runtimes)
+    datasets = get_benchmark_sets()
+    if dataset_indices is not None:  # only run some datasets
+        datasets = [datasets[i] for i in dataset_indices]
 
-#     # Aggregate performance summaries obtained in previous benchmark run:
-#     prev_perf_vals = [dataset["performance_val"] for dataset in datasets]
-#     previous_avg_performance = np.mean(prev_perf_vals)
-#     previous_median_performance = np.median(prev_perf_vals)
-#     previous_worst_performance = np.max(prev_perf_vals)
+    # Aggregate performance summaries obtained in previous benchmark run:
+    prev_perf_vals = [dataset["performance_val"] for dataset in datasets]
+    previous_avg_performance = np.mean(prev_perf_vals)
+    previous_median_performance = np.median(prev_perf_vals)
+    previous_worst_performance = np.max(prev_perf_vals)
 
-#     # Run benchmark:
-#     performance_vals = [0.0] * len(datasets)  # performance obtained in this run
-#     directory_prefix = "./datasets/"
-#     with warnings.catch_warnings(record=True) as caught_warnings:
-#         for idx in range(len(datasets)):
-#             dataset = datasets[idx]
-#             train_data, test_data = load_data(
-#                 directory_prefix=directory_prefix, train_file=train_file, test_file=test_file, name=dataset["name"], url=dataset["url"]
-#             )
-#             if seed_val is not None:
-#                 seed(seed_val)
-#                 np.random.seed(seed_val)
-#             print("Evaluating Benchmark Dataset %s (%d of %d)" % (dataset["name"], idx + 1, len(datasets)))
-#             directory = directory_prefix + dataset["name"] + "/"
-#             savedir = directory + "AutogluonOutput/"
-#             shutil.rmtree(savedir, ignore_errors=True)  # Delete AutoGluon output directory to ensure previous runs' information has been removed.
-#             label = dataset["label"]
-#             y_test = test_data[label]
-#             test_data = test_data.drop(labels=[label], axis=1)
-#             if fast_benchmark:
-#                 if subsample_size is None:
-#                     raise ValueError("fast_benchmark specified without subsample_size")
-#                 if subsample_size < len(train_data):
-#                     # .sample instead of .head to increase diversity and test cases where data index is not monotonically increasing.
-#                     train_data = train_data.sample(n=subsample_size, random_state=seed_val)  # subsample for fast_benchmark
-#             predictor = TabularPredictor(label=label, path=savedir).fit(train_data, **fit_args)
-#             assert len(predictor._trainer._models_failed_to_train) == 0
-#             results = predictor.fit_summary(verbosity=4)
-#             original_features = list(train_data)
-#             original_features.remove(label)
-#             assert original_features == predictor.original_features
-#             if predictor.problem_type != dataset["problem_type"]:
-#                 warnings.warn(
-#                     "For dataset %s: Autogluon inferred problem_type = %s, but should = %s" % (dataset["name"], predictor.problem_type, dataset["problem_type"])
-#                 )
-#             predictor = TabularPredictor.load(savedir)  # Test loading previously-trained predictor from file
-#             y_pred_empty = predictor.predict(test_data[0:0])
-#             assert len(y_pred_empty) == 0
-#             y_pred = predictor.predict(test_data)
-#             perf_dict = predictor.evaluate_predictions(y_true=y_test, y_pred=y_pred, auxiliary_metrics=True)
-#             if dataset["problem_type"] != REGRESSION:
-#                 perf = 1.0 - perf_dict["accuracy"]  # convert accuracy to error-rate
-#             else:
-#                 perf = 1.0 - perf_dict["r2"]  # unexplained variance score.
-#             performance_vals[idx] = perf
-#             print("Performance on dataset %s: %s   (previous perf=%s)" % (dataset["name"], performance_vals[idx], dataset["performance_val"]))
-#             if (not fast_benchmark) and (performance_vals[idx] > dataset["performance_val"] * perf_threshold):
-#                 warnings.warn(
-#                     "Performance on dataset %s is %s times worse than previous performance."
-#                     % (dataset["name"], performance_vals[idx] / (EPS + dataset["performance_val"]))
-#                 )
-#             if predictor._trainer.bagged_mode and not crash_in_oof:
-#                 # TODO: Test index alignment with original training data (first handle duplicated rows / dropped rows edge cases)
-#                 y_pred_oof = predictor.get_oof_pred()
-#                 y_pred_proba_oof = predictor.get_oof_pred_proba(as_multiclass=False)
-#                 y_pred_oof_transformed = predictor.get_oof_pred(transformed=True)
-#                 y_pred_proba_oof_transformed = predictor.get_oof_pred_proba(as_multiclass=False, transformed=True)
+    # Run benchmark:
+    performance_vals = [0.0] * len(datasets)  # performance obtained in this run
+    directory_prefix = "./datasets/"
+    with warnings.catch_warnings(record=True) as caught_warnings:
+        for idx in range(len(datasets)):
+            dataset = datasets[idx]
+            train_data, test_data = load_data(
+                directory_prefix=directory_prefix, train_file=train_file, test_file=test_file, name=dataset["name"], url=dataset["url"]
+            )
+            if seed_val is not None:
+                seed(seed_val)
+                np.random.seed(seed_val)
+            print("Evaluating Benchmark Dataset %s (%d of %d)" % (dataset["name"], idx + 1, len(datasets)))
+            directory = directory_prefix + dataset["name"] + "/"
+            savedir = directory + "AutogluonOutput/"
+            shutil.rmtree(savedir, ignore_errors=True)  # Delete AutoGluon output directory to ensure previous runs' information has been removed.
+            label = dataset["label"]
+            y_test = test_data[label]
+            test_data = test_data.drop(labels=[label], axis=1)
+            if fast_benchmark:
+                if subsample_size is None:
+                    raise ValueError("fast_benchmark specified without subsample_size")
+                if subsample_size < len(train_data):
+                    # .sample instead of .head to increase diversity and test cases where data index is not monotonically increasing.
+                    train_data = train_data.sample(n=subsample_size, random_state=seed_val)  # subsample for fast_benchmark
+            predictor = TabularPredictor(label=label, path=savedir).fit(train_data, **fit_args)
+            assert len(predictor._trainer._models_failed_to_train) == 0
+            results = predictor.fit_summary(verbosity=4)
+            original_features = list(train_data)
+            original_features.remove(label)
+            assert original_features == predictor.original_features
+            if predictor.problem_type != dataset["problem_type"]:
+                warnings.warn(
+                    "For dataset %s: Autogluon inferred problem_type = %s, but should = %s" % (dataset["name"], predictor.problem_type, dataset["problem_type"])
+                )
+            predictor = TabularPredictor.load(savedir)  # Test loading previously-trained predictor from file
+            y_pred_empty = predictor.predict(test_data[0:0])
+            assert len(y_pred_empty) == 0
+            y_pred = predictor.predict(test_data)
+            perf_dict = predictor.evaluate_predictions(y_true=y_test, y_pred=y_pred, auxiliary_metrics=True)
+            if dataset["problem_type"] != REGRESSION:
+                perf = 1.0 - perf_dict["accuracy"]  # convert accuracy to error-rate
+            else:
+                perf = 1.0 - perf_dict["r2"]  # unexplained variance score.
+            performance_vals[idx] = perf
+            print("Performance on dataset %s: %s   (previous perf=%s)" % (dataset["name"], performance_vals[idx], dataset["performance_val"]))
+            if (not fast_benchmark) and (performance_vals[idx] > dataset["performance_val"] * perf_threshold):
+                warnings.warn(
+                    "Performance on dataset %s is %s times worse than previous performance."
+                    % (dataset["name"], performance_vals[idx] / (EPS + dataset["performance_val"]))
+                )
+            if predictor._trainer.bagged_mode and not crash_in_oof:
+                # TODO: Test index alignment with original training data (first handle duplicated rows / dropped rows edge cases)
+                y_pred_oof = predictor.get_oof_pred()
+                y_pred_proba_oof = predictor.get_oof_pred_proba(as_multiclass=False)
+                y_pred_oof_transformed = predictor.get_oof_pred(transformed=True)
+                y_pred_proba_oof_transformed = predictor.get_oof_pred_proba(as_multiclass=False, transformed=True)
 
-#                 # Assert expected type output
-#                 assert isinstance(y_pred_oof, pd.Series)
-#                 assert isinstance(y_pred_oof_transformed, pd.Series)
-#                 if predictor.problem_type == MULTICLASS:
-#                     assert isinstance(y_pred_proba_oof, pd.DataFrame)
-#                     assert isinstance(y_pred_proba_oof_transformed, pd.DataFrame)
-#                 else:
-#                     if predictor.problem_type == BINARY:
-#                         assert isinstance(predictor.get_oof_pred_proba(), pd.DataFrame)
-#                     assert isinstance(y_pred_proba_oof, pd.Series)
-#                     assert isinstance(y_pred_proba_oof_transformed, pd.Series)
+                # Assert expected type output
+                assert isinstance(y_pred_oof, pd.Series)
+                assert isinstance(y_pred_oof_transformed, pd.Series)
+                if predictor.problem_type == MULTICLASS:
+                    assert isinstance(y_pred_proba_oof, pd.DataFrame)
+                    assert isinstance(y_pred_proba_oof_transformed, pd.DataFrame)
+                else:
+                    if predictor.problem_type == BINARY:
+                        assert isinstance(predictor.get_oof_pred_proba(), pd.DataFrame)
+                    assert isinstance(y_pred_proba_oof, pd.Series)
+                    assert isinstance(y_pred_proba_oof_transformed, pd.Series)
 
-#                 assert y_pred_oof_transformed.equals(predictor.transform_labels(y_pred_oof, proba=False))
+                assert y_pred_oof_transformed.equals(predictor.transform_labels(y_pred_oof, proba=False))
 
-#                 # Test that the transform_labels method is capable of reproducing the same output when converting back and forth, and test that oof 'transform' parameter works properly.
-#                 y_pred_proba_oof_inverse = predictor.transform_labels(y_pred_proba_oof, proba=True)
-#                 y_pred_proba_oof_inverse_inverse = predictor.transform_labels(y_pred_proba_oof_inverse, proba=True, inverse=True)
-#                 y_pred_oof_inverse = predictor.transform_labels(y_pred_oof)
-#                 y_pred_oof_inverse_inverse = predictor.transform_labels(y_pred_oof_inverse, inverse=True)
+                # Test that the transform_labels method is capable of reproducing the same output when converting back and forth, and test that oof 'transform' parameter works properly.
+                y_pred_proba_oof_inverse = predictor.transform_labels(y_pred_proba_oof, proba=True)
+                y_pred_proba_oof_inverse_inverse = predictor.transform_labels(y_pred_proba_oof_inverse, proba=True, inverse=True)
+                y_pred_oof_inverse = predictor.transform_labels(y_pred_oof)
+                y_pred_oof_inverse_inverse = predictor.transform_labels(y_pred_oof_inverse, inverse=True)
 
-#                 if isinstance(y_pred_proba_oof_transformed, pd.DataFrame):
-#                     pd.testing.assert_frame_equal(y_pred_proba_oof_transformed, y_pred_proba_oof_inverse)
-#                     pd.testing.assert_frame_equal(y_pred_proba_oof, y_pred_proba_oof_inverse_inverse)
-#                 else:
-#                     pd.testing.assert_series_equal(y_pred_proba_oof_transformed, y_pred_proba_oof_inverse)
-#                     pd.testing.assert_series_equal(y_pred_proba_oof, y_pred_proba_oof_inverse_inverse)
-#                 pd.testing.assert_series_equal(y_pred_oof_transformed, y_pred_oof_inverse)
-#                 pd.testing.assert_series_equal(y_pred_oof, y_pred_oof_inverse_inverse)
+                if isinstance(y_pred_proba_oof_transformed, pd.DataFrame):
+                    pd.testing.assert_frame_equal(y_pred_proba_oof_transformed, y_pred_proba_oof_inverse)
+                    pd.testing.assert_frame_equal(y_pred_proba_oof, y_pred_proba_oof_inverse_inverse)
+                else:
+                    pd.testing.assert_series_equal(y_pred_proba_oof_transformed, y_pred_proba_oof_inverse)
+                    pd.testing.assert_series_equal(y_pred_proba_oof, y_pred_proba_oof_inverse_inverse)
+                pd.testing.assert_series_equal(y_pred_oof_transformed, y_pred_oof_inverse)
+                pd.testing.assert_series_equal(y_pred_oof, y_pred_oof_inverse_inverse)
 
-#                 # Test that index of both the internal training data and the oof outputs are consistent in their index values.
-#                 X_internal, y_internal = predictor.load_data_internal()
-#                 y_internal_index = list(y_internal.index)
-#                 assert list(X_internal.index) == y_internal_index
-#                 assert list(y_pred_oof.index) == y_internal_index
-#                 assert list(y_pred_proba_oof.index) == y_internal_index
-#                 assert list(y_pred_oof_transformed.index) == y_internal_index
-#                 assert list(y_pred_proba_oof_transformed.index) == y_internal_index
-#             else:
-#                 # Raise exception
-#                 with pytest.raises(AssertionError):
-#                     predictor.get_oof_pred()
-#                 with pytest.raises(AssertionError):
-#                     predictor.get_oof_pred_proba()
-#             if run_distill:
-#                 predictor.distill(time_limit=60, augment_args={"size_factor": 0.5})
+                # Test that index of both the internal training data and the oof outputs are consistent in their index values.
+                X_internal, y_internal = predictor.load_data_internal()
+                y_internal_index = list(y_internal.index)
+                assert list(X_internal.index) == y_internal_index
+                assert list(y_pred_oof.index) == y_internal_index
+                assert list(y_pred_proba_oof.index) == y_internal_index
+                assert list(y_pred_oof_transformed.index) == y_internal_index
+                assert list(y_pred_proba_oof_transformed.index) == y_internal_index
+            else:
+                # Raise exception
+                with pytest.raises(AssertionError):
+                    predictor.get_oof_pred()
+                with pytest.raises(AssertionError):
+                    predictor.get_oof_pred_proba()
+            if run_distill:
+                predictor.distill(time_limit=60, augment_args={"size_factor": 0.5})
 
-#     # Summarize:
-#     avg_perf = np.mean(performance_vals)
-#     median_perf = np.median(performance_vals)
-#     worst_perf = np.max(performance_vals)
-#     for idx in range(len(datasets)):
-#         print("Performance on dataset %s: %s   (previous perf=%s)" % (datasets[idx]["name"], performance_vals[idx], datasets[idx]["performance_val"]))
+    # Summarize:
+    avg_perf = np.mean(performance_vals)
+    median_perf = np.median(performance_vals)
+    worst_perf = np.max(performance_vals)
+    for idx in range(len(datasets)):
+        print("Performance on dataset %s: %s   (previous perf=%s)" % (datasets[idx]["name"], performance_vals[idx], datasets[idx]["performance_val"]))
 
-#     print("Average performance: %s" % avg_perf)
-#     print("Median performance: %s" % median_perf)
-#     print("Worst performance: %s" % worst_perf)
+    print("Average performance: %s" % avg_perf)
+    print("Median performance: %s" % median_perf)
+    print("Worst performance: %s" % worst_perf)
 
-#     if not fast_benchmark:
-#         if avg_perf > previous_avg_performance * perf_threshold:
-#             warnings.warn("Average Performance is %s times worse than previously." % (avg_perf / (EPS + previous_avg_performance)))
-#         if median_perf > previous_median_performance * perf_threshold:
-#             warnings.warn("Median Performance is %s times worse than previously." % (median_perf / (EPS + previous_median_performance)))
-#         if worst_perf > previous_worst_performance * perf_threshold:
-#             warnings.warn("Worst Performance is %s times worse than previously." % (worst_perf / (EPS + previous_worst_performance)))
+    if not fast_benchmark:
+        if avg_perf > previous_avg_performance * perf_threshold:
+            warnings.warn("Average Performance is %s times worse than previously." % (avg_perf / (EPS + previous_avg_performance)))
+        if median_perf > previous_median_performance * perf_threshold:
+            warnings.warn("Median Performance is %s times worse than previously." % (median_perf / (EPS + previous_median_performance)))
+        if worst_perf > previous_worst_performance * perf_threshold:
+            warnings.warn("Worst Performance is %s times worse than previously." % (worst_perf / (EPS + previous_worst_performance)))
 
-#     print("Ran fit with args:")
-#     print(fit_args)
-#     # List all warnings again to make sure they are seen:
-#     print("\n\n WARNINGS:")
-#     for w in caught_warnings:
-#         warnings.warn(w.message)
+    print("Ran fit with args:")
+    print(fit_args)
+    # List all warnings again to make sure they are seen:
+    print("\n\n WARNINGS:")
+    for w in caught_warnings:
+        warnings.warn(w.message)
 
 
 def test_pseudolabeling():
@@ -1143,6 +1143,7 @@ def test_tabular_log_to_file():
     predictor = TabularPredictor(label="class", log_to_file=True, log_file_path=log_file).fit(train_data=train_data, hyperparameters={"DUMMY": {}})
     log = TabularPredictor.load_log(log_file_path=log_file)
     assert "TabularPredictor saved." in log[-1]
+    predictor.close()
     os.remove(log_file)
 
     with pytest.raises(AssertionError):
