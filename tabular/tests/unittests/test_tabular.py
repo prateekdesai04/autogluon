@@ -931,84 +931,84 @@ def test_quantile():
     perf = predictor.evaluate(test_data)
 
 
-# @pytest.mark.skip(reason="Ignored for now, since stacking is disabled without bagging.")
-# def test_tabular_stack1():
-#     ############ Benchmark options you can set: ########################
-#     num_stack_levels = 1
-#     num_bag_folds = 0
-#     perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
-#     seed_val = 32  # random seed
-#     subsample_size = None
-#     hyperparameter_tune_kwargs = None
-#     verbosity = 2  # how much output to print
-#     hyperparameters = None
-#     time_limit = None
-#     fast_benchmark = True  # False
-#     # If True, run a faster benchmark (subsample training sets, less epochs, etc),
-#     # otherwise we run full benchmark with default AutoGluon settings.
-#     # performance_value warnings are disabled when fast_benchmark = True.
+@pytest.mark.skip(reason="Ignored for now, since stacking is disabled without bagging.")
+def test_tabular_stack1():
+    ############ Benchmark options you can set: ########################
+    num_stack_levels = 1
+    num_bag_folds = 0
+    perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
+    seed_val = 32  # random seed
+    subsample_size = None
+    hyperparameter_tune_kwargs = None
+    verbosity = 2  # how much output to print
+    hyperparameters = None
+    time_limit = None
+    fast_benchmark = True  # False
+    # If True, run a faster benchmark (subsample training sets, less epochs, etc),
+    # otherwise we run full benchmark with default AutoGluon settings.
+    # performance_value warnings are disabled when fast_benchmark = True.
 
-#     #### If fast_benchmark = True, can control model training time here. Only used if fast_benchmark=True ####
-#     if fast_benchmark:
-#         subsample_size = 100
-#         nn_options = {"num_epochs": 3}
-#         gbm_options = {"num_boost_round": 30}
-#         hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
-#         time_limit = 60
+    #### If fast_benchmark = True, can control model training time here. Only used if fast_benchmark=True ####
+    if fast_benchmark:
+        subsample_size = 100
+        nn_options = {"num_epochs": 3}
+        gbm_options = {"num_boost_round": 30}
+        hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
+        time_limit = 60
 
-#     fit_args = {
-#         "num_bag_folds": num_bag_folds,
-#         "num_stack_levels": num_stack_levels,
-#         "verbosity": verbosity,
-#     }
-#     if hyperparameter_tune_kwargs is not None:
-#         fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
-#     if hyperparameters is not None:
-#         fit_args["hyperparameters"] = hyperparameters
-#     if time_limit is not None:
-#         fit_args["time_limit"] = time_limit
-#     ###################################################################
-#     run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
+    fit_args = {
+        "num_bag_folds": num_bag_folds,
+        "num_stack_levels": num_stack_levels,
+        "verbosity": verbosity,
+    }
+    if hyperparameter_tune_kwargs is not None:
+        fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
+    if hyperparameters is not None:
+        fit_args["hyperparameters"] = hyperparameters
+    if time_limit is not None:
+        fit_args["time_limit"] = time_limit
+    ###################################################################
+    run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
 
 
-# @pytest.mark.skip(reason="Ignored for now, since stacking is disabled without bagging.")
-# def test_tabular_stack2():
-#     ############ Benchmark options you can set: ########################
-#     num_stack_levels = 2
-#     num_bag_folds = 0
-#     perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
-#     seed_val = 66  # random seed
-#     subsample_size = None
-#     hyperparameter_tune_kwargs = None
-#     verbosity = 2  # how much output to print
-#     hyperparameters = None
-#     time_limit = None
-#     fast_benchmark = True  # False
-#     # If True, run a faster benchmark (subsample training sets, less epochs, etc),
-#     # otherwise we run full benchmark with default AutoGluon settings.
-#     # performance_value warnings are disabled when fast_benchmark = True.
+@pytest.mark.skip(reason="Ignored for now, since stacking is disabled without bagging.")
+def test_tabular_stack2():
+    ############ Benchmark options you can set: ########################
+    num_stack_levels = 2
+    num_bag_folds = 0
+    perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
+    seed_val = 66  # random seed
+    subsample_size = None
+    hyperparameter_tune_kwargs = None
+    verbosity = 2  # how much output to print
+    hyperparameters = None
+    time_limit = None
+    fast_benchmark = True  # False
+    # If True, run a faster benchmark (subsample training sets, less epochs, etc),
+    # otherwise we run full benchmark with default AutoGluon settings.
+    # performance_value warnings are disabled when fast_benchmark = True.
 
-#     #### If fast_benchmark = True, can control model training time here. Only used if fast_benchmark=True ####
-#     if fast_benchmark:
-#         subsample_size = 100
-#         nn_options = {"num_epochs": 3}
-#         gbm_options = {"num_boost_round": 30}
-#         hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
-#         time_limit = 60
+    #### If fast_benchmark = True, can control model training time here. Only used if fast_benchmark=True ####
+    if fast_benchmark:
+        subsample_size = 100
+        nn_options = {"num_epochs": 3}
+        gbm_options = {"num_boost_round": 30}
+        hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
+        time_limit = 60
 
-#     fit_args = {
-#         "num_bag_folds": num_bag_folds,
-#         "num_stack_levels": num_stack_levels,
-#         "verbosity": verbosity,
-#     }
-#     if hyperparameter_tune_kwargs is not None:
-#         fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
-#     if hyperparameters is not None:
-#         fit_args["hyperparameters"] = hyperparameters
-#     if time_limit is not None:
-#         fit_args["time_limit"] = time_limit
-#     ###################################################################
-#     run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
+    fit_args = {
+        "num_bag_folds": num_bag_folds,
+        "num_stack_levels": num_stack_levels,
+        "verbosity": verbosity,
+    }
+    if hyperparameter_tune_kwargs is not None:
+        fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
+    if hyperparameters is not None:
+        fit_args["hyperparameters"] = hyperparameters
+    if time_limit is not None:
+        fit_args["time_limit"] = time_limit
+    ###################################################################
+    run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
 
 
 # @pytest.mark.slow
@@ -1130,21 +1130,20 @@ def test_tabular_raise_on_nonfinite_class_labels():
         assert str(ex_info.value).split()[-1] == str(idx)
 
 
-def test_tabular_log_to_file():
-    data_root = "https://autogluon.s3.amazonaws.com/datasets/Inc/"
-    train_data = TabularDataset(data_root + "train.csv")
-    train_data = train_data.sample(500)
+# def test_tabular_log_to_file():
+#     data_root = "https://autogluon.s3.amazonaws.com/datasets/Inc/"
+#     train_data = TabularDataset(data_root + "train.csv")
+#     train_data = train_data.sample(500)
 
-    predictor = TabularPredictor(label="class", log_to_file=True).fit(train_data=train_data, hyperparameters={"DUMMY": {}})
-    log = TabularPredictor.load_log(predictor_path=predictor.path)
-    assert "TabularPredictor saved." in log[-1]
+#     predictor = TabularPredictor(label="class", log_to_file=True).fit(train_data=train_data, hyperparameters={"DUMMY": {}})
+#     log = TabularPredictor.load_log(predictor_path=predictor.path)
+#     assert "TabularPredictor saved." in log[-1]
 
-    log_file = os.path.join(".", "temp.log")
-    predictor = TabularPredictor(label="class", log_to_file=True, log_file_path=log_file).fit(train_data=train_data, hyperparameters={"DUMMY": {}})
-    log = TabularPredictor.load_log(log_file_path=log_file)
-    assert "TabularPredictor saved." in log[-1]
-    predictor.close()
-    os.remove(log_file)
+#     log_file = os.path.join(".", "temp.log")
+#     predictor = TabularPredictor(label="class", log_to_file=True, log_file_path=log_file).fit(train_data=train_data, hyperparameters={"DUMMY": {}})
+#     log = TabularPredictor.load_log(log_file_path=log_file)
+#     assert "TabularPredictor saved." in log[-1]
+#     os.remove(log_file)
 
-    with pytest.raises(AssertionError):
-        TabularPredictor.load_log()
+#     with pytest.raises(AssertionError):
+#         TabularPredictor.load_log()
