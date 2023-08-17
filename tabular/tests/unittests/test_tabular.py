@@ -360,41 +360,41 @@ def load_data(directory_prefix, train_file, test_file, name, url=None):
     return train_data, test_data
 
 
-# def run_tabular_benchmark_toy(fit_args):
-#     dataset = {
-#         "url": "https://autogluon.s3.amazonaws.com/datasets/toyClassification.zip",
-#         "name": "toyClassification",
-#         "problem_type": MULTICLASS,
-#         "label": "y",
-#         "performance_val": 0.436,
-#     }
-#     # 2-D toy noisy, imbalanced 4-class classification task with: feature missingness, out-of-vocabulary feature categories in test data, out-of-vocabulary labels in test data, training column missing from test data, extra distraction columns in test data
-#     # toyclassif_dataset should produce 1 warning and 1 error during inference:
-#     # Warning: Ignoring 181 (out of 1000) training examples for which the label value in column 'y' is missing
-#     # ValueError: Required columns are missing from the provided dataset. Missing columns: ['lostcolumn']
+def run_tabular_benchmark_toy(fit_args):
+    dataset = {
+        "url": "https://autogluon.s3.amazonaws.com/datasets/toyClassification.zip",
+        "name": "toyClassification",
+        "problem_type": MULTICLASS,
+        "label": "y",
+        "performance_val": 0.436,
+    }
+    # 2-D toy noisy, imbalanced 4-class classification task with: feature missingness, out-of-vocabulary feature categories in test data, out-of-vocabulary labels in test data, training column missing from test data, extra distraction columns in test data
+    # toyclassif_dataset should produce 1 warning and 1 error during inference:
+    # Warning: Ignoring 181 (out of 1000) training examples for which the label value in column 'y' is missing
+    # ValueError: Required columns are missing from the provided dataset. Missing columns: ['lostcolumn']
 
-#     # Additional warning that would have occurred if ValueError was not triggered:
-#     # UserWarning: These columns from this dataset were not present in the training dataset (AutoGluon will ignore them):  ['distractioncolumn1', 'distractioncolumn2']
+    # Additional warning that would have occurred if ValueError was not triggered:
+    # UserWarning: These columns from this dataset were not present in the training dataset (AutoGluon will ignore them):  ['distractioncolumn1', 'distractioncolumn2']
 
-#     directory_prefix = "./datasets/"
-#     train_file = "train_data.csv"
-#     test_file = "test_data.csv"
-#     train_data, test_data = load_data(directory_prefix=directory_prefix, train_file=train_file, test_file=test_file, name=dataset["name"], url=dataset["url"])
-#     print(f"Evaluating Benchmark Dataset {dataset['name']}")
-#     directory = directory_prefix + dataset["name"] + "/"
-#     savedir = directory + "AutogluonOutput/"
-#     shutil.rmtree(savedir, ignore_errors=True)  # Delete AutoGluon output directory to ensure previous runs' information has been removed.
-#     predictor = TabularPredictor(label=dataset["label"], path=savedir).fit(train_data, **fit_args)
-#     assert len(predictor._trainer._models_failed_to_train) == 0
-#     print(predictor.feature_metadata)
-#     print(predictor.feature_metadata.type_map_raw)
-#     print(predictor.feature_metadata.type_group_map_special)
-#     try:
-#         predictor.predict(test_data)
-#     except KeyError:  # KeyError should be raised because test_data has missing column 'lostcolumn'
-#         pass
-#     else:
-#         raise AssertionError(f'{dataset["name"]} should raise an exception.')
+    directory_prefix = "./datasets/"
+    train_file = "train_data.csv"
+    test_file = "test_data.csv"
+    train_data, test_data = load_data(directory_prefix=directory_prefix, train_file=train_file, test_file=test_file, name=dataset["name"], url=dataset["url"])
+    print(f"Evaluating Benchmark Dataset {dataset['name']}")
+    directory = directory_prefix + dataset["name"] + "/"
+    savedir = directory + "AutogluonOutput/"
+    shutil.rmtree(savedir, ignore_errors=True)  # Delete AutoGluon output directory to ensure previous runs' information has been removed.
+    predictor = TabularPredictor(label=dataset["label"], path=savedir).fit(train_data, **fit_args)
+    assert len(predictor._trainer._models_failed_to_train) == 0
+    print(predictor.feature_metadata)
+    print(predictor.feature_metadata.type_map_raw)
+    print(predictor.feature_metadata.type_group_map_special)
+    try:
+        predictor.predict(test_data)
+    except KeyError:  # KeyError should be raised because test_data has missing column 'lostcolumn'
+        pass
+    else:
+        raise AssertionError(f'{dataset["name"]} should raise an exception.')
 
 
 def get_benchmark_sets():
