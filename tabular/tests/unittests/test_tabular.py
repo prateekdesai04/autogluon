@@ -812,58 +812,58 @@ def test_pseudolabeling():
 #     run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
 
 
-# def _construct_tabular_bag_test_config(fold_fitting_strategy):
-#     ############ Benchmark options you can set: ########################
-#     num_bag_folds = 3
-#     num_stack_levels = 0
-#     perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
-#     seed_val = 123  # random seed
-#     subsample_size = None
-#     hyperparameter_tune_kwargs = None
-#     verbosity = 2  # how much output to print
-#     hyperparameters = None
-#     time_limit = None
-#     fast_benchmark = True  # False
-#     # If True, run a faster benchmark (subsample training sets, less epochs, etc),
-#     # otherwise we run full benchmark with default AutoGluon settings.
-#     # performance_value warnings are disabled when fast_benchmark = True.
+def _construct_tabular_bag_test_config(fold_fitting_strategy):
+    ############ Benchmark options you can set: ########################
+    num_bag_folds = 3
+    num_stack_levels = 0
+    perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
+    seed_val = 123  # random seed
+    subsample_size = None
+    hyperparameter_tune_kwargs = None
+    verbosity = 2  # how much output to print
+    hyperparameters = None
+    time_limit = None
+    fast_benchmark = True  # False
+    # If True, run a faster benchmark (subsample training sets, less epochs, etc),
+    # otherwise we run full benchmark with default AutoGluon settings.
+    # performance_value warnings are disabled when fast_benchmark = True.
 
-#     #### If fast_benchmark = True, can control model training time here. Only used if fast_benchmark=True ####
-#     if fast_benchmark:
-#         subsample_size = 120
-#         nn_options = {"num_epochs": 1}
-#         gbm_options = {"num_boost_round": 30}
-#         hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
-#         time_limit = 60
+    #### If fast_benchmark = True, can control model training time here. Only used if fast_benchmark=True ####
+    if fast_benchmark:
+        subsample_size = 120
+        nn_options = {"num_epochs": 1}
+        gbm_options = {"num_boost_round": 30}
+        hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
+        time_limit = 60
 
-#     fit_args = {
-#         "num_bag_folds": num_bag_folds,
-#         "num_stack_levels": num_stack_levels,
-#         "verbosity": verbosity,
-#         "ag_args_ensemble": {
-#             "fold_fitting_strategy": fold_fitting_strategy,
-#         },
-#     }
-#     if hyperparameter_tune_kwargs is not None:
-#         fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
-#     if hyperparameters is not None:
-#         fit_args["hyperparameters"] = hyperparameters
-#     if time_limit is not None:
-#         fit_args["time_limit"] = time_limit
-#         fit_args["num_bag_sets"] = 2
-#     ###################################################################
-#     config = dict(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
-#     return config
-
-
-# def test_tabular_parallel_local_bagging():
-#     config = _construct_tabular_bag_test_config(PARALLEL_LOCAL_BAGGING)
-#     run_tabular_benchmarks(**config)
+    fit_args = {
+        "num_bag_folds": num_bag_folds,
+        "num_stack_levels": num_stack_levels,
+        "verbosity": verbosity,
+        "ag_args_ensemble": {
+            "fold_fitting_strategy": fold_fitting_strategy,
+        },
+    }
+    if hyperparameter_tune_kwargs is not None:
+        fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
+    if hyperparameters is not None:
+        fit_args["hyperparameters"] = hyperparameters
+    if time_limit is not None:
+        fit_args["time_limit"] = time_limit
+        fit_args["num_bag_sets"] = 2
+    ###################################################################
+    config = dict(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
+    return config
 
 
-# def test_tabular_sequential_local_bagging():
-#     config = _construct_tabular_bag_test_config(SEQUENTIAL_LOCAL_BAGGING)
-#     run_tabular_benchmarks(**config)
+def test_tabular_parallel_local_bagging():
+    config = _construct_tabular_bag_test_config(PARALLEL_LOCAL_BAGGING)
+    run_tabular_benchmarks(**config)
+
+
+def test_tabular_sequential_local_bagging():
+    config = _construct_tabular_bag_test_config(SEQUENTIAL_LOCAL_BAGGING)
+    run_tabular_benchmarks(**config)
 
 
 def test_sample_weight():
