@@ -28,9 +28,9 @@ fi
 cd tabular/
 if [ -n "$ADDITIONAL_TEST_ARGS" ]
 then
-    sudo pip3 uninstall ray
+    pip3 uninstall -y ray
     python3 -m pytest -s -v --junitxml=results.xml --runslow --durations=10 "$ADDITIONAL_TEST_ARGS" tests
 else
-    sudo pip3 uninstall ray
+    pip3 uninstall -y ray
     python3 -m pytest -s -v --junitxml=results.xml --runslow --durations=10 tests
 fi

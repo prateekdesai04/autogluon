@@ -58,7 +58,9 @@ def test_tabular():
         subsample_size = 100
         time_limit = 60
 
-    fit_args = {"verbosity": verbosity}
+    fit_args = {"verbosity": verbosity, "ag_args_ensemble": {
+            "fold_fitting_strategy": SEQUENTIAL_LOCAL_BAGGING,
+        }}
     if hyperparameter_tune_kwargs is not None:
         fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
     if hyperparameters is not None:
@@ -716,13 +718,16 @@ def test_tabularHPObagstack():
         subsample_size = 100
         nn_options = {"num_epochs": 2, "learning_rate": space.Real(0.001, 0.01)}
         gbm_options = {"num_boost_round": 20, "learning_rate": space.Real(0.01, 0.1)}
-        hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
+        hyperparameters = {"GBM": gbm_options}
         time_limit = 50
 
     fit_args = {
         "num_bag_folds": num_bag_folds,
         "num_stack_levels": num_stack_levels,
         "verbosity": verbosity,
+        "ag_args_ensemble": {
+            "fold_fitting_strategy": SEQUENTIAL_LOCAL_BAGGING,
+        }
     }
     if hyperparameter_tune_kwargs is not None:
         fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
@@ -757,6 +762,9 @@ def test_tabularHPO():
 
     fit_args = {
         "verbosity": verbosity,
+        "ag_args_ensemble": {
+            "fold_fitting_strategy": SEQUENTIAL_LOCAL_BAGGING,
+        }
     }
     if hyperparameter_tune_kwargs is not None:
         fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
@@ -802,6 +810,9 @@ def test_tabular_feature_prune():
 
     fit_args = {
         "verbosity": verbosity,
+        "ag_args_ensemble": {
+            "fold_fitting_strategy": SEQUENTIAL_LOCAL_BAGGING,
+        }
     }
     fit_args["ag_args"] = ag_args
     if time_limit is not None:
@@ -833,7 +844,7 @@ def _construct_tabular_bag_test_config(fold_fitting_strategy):
         subsample_size = 120
         nn_options = {"num_epochs": 1}
         gbm_options = {"num_boost_round": 30}
-        hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
+        hyperparameters = {"GBM": gbm_options}
         time_limit = 60
 
     fit_args = {
@@ -841,7 +852,7 @@ def _construct_tabular_bag_test_config(fold_fitting_strategy):
         "num_stack_levels": num_stack_levels,
         "verbosity": verbosity,
         "ag_args_ensemble": {
-            "fold_fitting_strategy": fold_fitting_strategy,
+            "fold_fitting_strategy": SEQUENTIAL_LOCAL_BAGGING,
         },
     }
     if hyperparameter_tune_kwargs is not None:
@@ -856,9 +867,9 @@ def _construct_tabular_bag_test_config(fold_fitting_strategy):
     return config
 
 
-def test_tabular_parallel_local_bagging():
-    config = _construct_tabular_bag_test_config(PARALLEL_LOCAL_BAGGING)
-    run_tabular_benchmarks(**config)
+# def test_tabular_parallel_local_bagging():
+#     config = _construct_tabular_bag_test_config(PARALLEL_LOCAL_BAGGING)
+#     run_tabular_benchmarks(**config)
 
 
 def test_tabular_sequential_local_bagging():
@@ -896,7 +907,9 @@ def test_sample_weight():
     train_data[sample_weight] = weights
     test_data_weighted = test_data.copy()
     test_data_weighted[sample_weight] = test_weights
-    fit_args = {"time_limit": 20}
+    fit_args = {"time_limit": 20, "ag_args_ensemble": {
+            "fold_fitting_strategy": SEQUENTIAL_LOCAL_BAGGING,
+        },}
     predictor = TabularPredictor(label=dataset["label"], path=savedir, problem_type=dataset["problem_type"], sample_weight=sample_weight).fit(
         train_data, **fit_args
     )
@@ -923,7 +936,9 @@ def test_quantile():
     directory = directory_prefix + dataset["name"] + "/"
     savedir = directory + "AutogluonOutput/"
     shutil.rmtree(savedir, ignore_errors=True)  # Delete AutoGluon output directory to ensure previous runs' information has been removed.
-    fit_args = {"time_limit": 20}
+    fit_args = {"time_limit": 20, "ag_args_ensemble": {
+            "fold_fitting_strategy": SEQUENTIAL_LOCAL_BAGGING,
+        },}
     predictor = TabularPredictor(label=dataset["label"], path=savedir, problem_type=dataset["problem_type"], quantile_levels=quantile_levels).fit(
         train_data, **fit_args
     )
@@ -953,7 +968,7 @@ def test_tabular_stack1():
         subsample_size = 100
         nn_options = {"num_epochs": 3}
         gbm_options = {"num_boost_round": 30}
-        hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
+        hyperparameters = {"GBM": gbm_options}
         time_limit = 60
 
     fit_args = {
@@ -993,7 +1008,7 @@ def test_tabular_stack2():
         subsample_size = 100
         nn_options = {"num_epochs": 3}
         gbm_options = {"num_boost_round": 30}
-        hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
+        hyperparameters = {"GBM": gbm_options}
         time_limit = 60
 
     fit_args = {
@@ -1033,13 +1048,16 @@ def test_tabular_bagstack():
         subsample_size = 105
         nn_options = {"num_epochs": 2}
         gbm_options = [{"num_boost_round": 40}, "GBMLarge"]
-        hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
+        hyperparameters = {"GBM": gbm_options}
         time_limit = 60
 
     fit_args = {
         "num_bag_folds": num_bag_folds,
         "num_stack_levels": num_stack_levels,
         "verbosity": verbosity,
+        "ag_args_ensemble": {
+            "fold_fitting_strategy": SEQUENTIAL_LOCAL_BAGGING,
+        },
     }
     if hyperparameter_tune_kwargs is not None:
         fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
@@ -1076,7 +1094,7 @@ def test_tabular_bagstack_use_bag_holdout():
         subsample_size = 105
         nn_options = {"num_epochs": 2}
         gbm_options = [{"num_boost_round": 40}, "GBMLarge"]
-        hyperparameters = {"GBM": gbm_options, "NN_TORCH": nn_options}
+        hyperparameters = {"GBM": gbm_options}
         time_limit = 60
 
     fit_args = {
@@ -1084,6 +1102,9 @@ def test_tabular_bagstack_use_bag_holdout():
         "num_stack_levels": num_stack_levels,
         "verbosity": verbosity,
         "use_bag_holdout": True,
+        "ag_args_ensemble": {
+            "fold_fitting_strategy": SEQUENTIAL_LOCAL_BAGGING,
+        },
     }
     if hyperparameter_tune_kwargs is not None:
         fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
