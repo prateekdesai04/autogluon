@@ -1280,174 +1280,174 @@ def _assert_predict_proba_dict_identical_to_predict_proba(predictor: TabularPred
                         assert np.array_equal(model_pred_proba, predict_proba_dict[m])
 
 
-# def test_advanced_functionality():
-#     """
-#     Tests a bunch of advanced functionality, including when used in combination.
-#     The idea is that if this test passes, we are in good shape.
-#     Simpler to test all of this within one test as it avoids repeating redundant setup such as fitting a predictor.
-#     """
-#     fast_benchmark = True
-#     dataset = {
-#         "url": "https://autogluon.s3.amazonaws.com/datasets/AdultIncomeBinaryClassification.zip",
-#         "name": "AdultIncomeBinaryClassification",
-#         "problem_type": BINARY,
-#     }
-#     label = "class"
-#     directory_prefix = "./datasets/"
-#     train_file = "train_data.csv"
-#     test_file = "test_data.csv"
-#     train_data, test_data = load_data(directory_prefix=directory_prefix, train_file=train_file, test_file=test_file, name=dataset["name"], url=dataset["url"])
-#     if fast_benchmark:  # subsample for fast_benchmark
-#         subsample_size = 100
-#         train_data = train_data.head(subsample_size)
-#         test_data = test_data.head(subsample_size)
-#     print(f"Evaluating Advanced Functionality on Benchmark Dataset {dataset['name']}")
-#     directory = directory_prefix + "advanced/" + dataset["name"] + "/"
-#     savedir = directory + "AutogluonOutput/"
-#     shutil.rmtree(savedir, ignore_errors=True)  # Delete AutoGluon output directory to ensure previous runs' information has been removed.
-#     savedir_predictor_original = savedir + "predictor/"
-#     predictor: TabularPredictor = TabularPredictor(label=label, path=savedir_predictor_original).fit(train_data)
-#     leaderboard = predictor.leaderboard(data=test_data)
-#     predictor.plot_ensemble_model()
-#     extra_metrics = ["accuracy", "roc_auc", "log_loss"]
-#     test_data_no_label = test_data.drop(columns=[label])
-#     with pytest.raises(ValueError):
-#         # Error because skip_score is False and label not present
-#         predictor.leaderboard(data=test_data_no_label)
-#     with pytest.raises(ValueError):
-#         # Error because extra_metrics != None and label not present
-#         predictor.leaderboard(data=test_data_no_label, skip_score=True, extra_metrics=extra_metrics)
-#     # Valid because skip_score=True
-#     leaderboard_no_score = predictor.leaderboard(data=test_data.drop(columns=[label]), skip_score=True)
-#     assert len(leaderboard) == len(leaderboard_no_score)
-#     assert "pred_time_test" in leaderboard_no_score
-#     assert "pred_time_test_marginal" in leaderboard_no_score
-#     assert "score_test" in leaderboard_no_score
-#     for i in range(len(leaderboard_no_score)):
-#         # Assert that score_test is NaN for all models
-#         assert leaderboard_no_score["score_test"].isnull().iloc[i]
-#     leaderboard_extra = predictor.leaderboard(data=test_data, extra_info=True, extra_metrics=extra_metrics)
-#     _assert_predict_dict_identical_to_predict(predictor=predictor, data=test_data)
-#     _assert_predict_proba_dict_identical_to_predict_proba(predictor=predictor, data=test_data)
-#     assert set(predictor.get_model_names()) == set(leaderboard["model"])
-#     assert set(predictor.get_model_names()) == set(leaderboard_extra["model"])
-#     assert set(leaderboard_extra.columns).issuperset(set(leaderboard.columns))
-#     assert len(leaderboard) == len(leaderboard_extra)
-#     assert set(leaderboard_extra.columns).issuperset(set(extra_metrics))  # Assert that extra_metrics are present in output
-#     num_models = len(predictor.get_model_names())
-#     feature_importances = predictor.feature_importance(data=test_data)
-#     original_features = set(train_data.columns)
-#     original_features.remove(label)
-#     assert set(feature_importances.index) == original_features
-#     assert set(feature_importances.columns) == {"importance", "stddev", "p_value", "n", "p99_high", "p99_low"}
-#     predictor.transform_features()
-#     test_data_transformed = predictor.transform_features(data=test_data)
-#     predictor.info()
+def test_advanced_functionality():
+    """
+    Tests a bunch of advanced functionality, including when used in combination.
+    The idea is that if this test passes, we are in good shape.
+    Simpler to test all of this within one test as it avoids repeating redundant setup such as fitting a predictor.
+    """
+    fast_benchmark = True
+    dataset = {
+        "url": "https://autogluon.s3.amazonaws.com/datasets/AdultIncomeBinaryClassification.zip",
+        "name": "AdultIncomeBinaryClassification",
+        "problem_type": BINARY,
+    }
+    label = "class"
+    directory_prefix = "./datasets/"
+    train_file = "train_data.csv"
+    test_file = "test_data.csv"
+    train_data, test_data = load_data(directory_prefix=directory_prefix, train_file=train_file, test_file=test_file, name=dataset["name"], url=dataset["url"])
+    if fast_benchmark:  # subsample for fast_benchmark
+        subsample_size = 100
+        train_data = train_data.head(subsample_size)
+        test_data = test_data.head(subsample_size)
+    print(f"Evaluating Advanced Functionality on Benchmark Dataset {dataset['name']}")
+    directory = directory_prefix + "advanced/" + dataset["name"] + "/"
+    savedir = directory + "AutogluonOutput/"
+    shutil.rmtree(savedir, ignore_errors=True)  # Delete AutoGluon output directory to ensure previous runs' information has been removed.
+    savedir_predictor_original = savedir + "predictor/"
+    predictor: TabularPredictor = TabularPredictor(label=label, path=savedir_predictor_original).fit(train_data)
+    leaderboard = predictor.leaderboard(data=test_data)
+    predictor.plot_ensemble_model()
+    extra_metrics = ["accuracy", "roc_auc", "log_loss"]
+    test_data_no_label = test_data.drop(columns=[label])
+    with pytest.raises(ValueError):
+        # Error because skip_score is False and label not present
+        predictor.leaderboard(data=test_data_no_label)
+    with pytest.raises(ValueError):
+        # Error because extra_metrics != None and label not present
+        predictor.leaderboard(data=test_data_no_label, skip_score=True, extra_metrics=extra_metrics)
+    # Valid because skip_score=True
+    leaderboard_no_score = predictor.leaderboard(data=test_data.drop(columns=[label]), skip_score=True)
+    assert len(leaderboard) == len(leaderboard_no_score)
+    assert "pred_time_test" in leaderboard_no_score
+    assert "pred_time_test_marginal" in leaderboard_no_score
+    assert "score_test" in leaderboard_no_score
+    for i in range(len(leaderboard_no_score)):
+        # Assert that score_test is NaN for all models
+        assert leaderboard_no_score["score_test"].isnull().iloc[i]
+    leaderboard_extra = predictor.leaderboard(data=test_data, extra_info=True, extra_metrics=extra_metrics)
+    _assert_predict_dict_identical_to_predict(predictor=predictor, data=test_data)
+    _assert_predict_proba_dict_identical_to_predict_proba(predictor=predictor, data=test_data)
+    assert set(predictor.get_model_names()) == set(leaderboard["model"])
+    assert set(predictor.get_model_names()) == set(leaderboard_extra["model"])
+    assert set(leaderboard_extra.columns).issuperset(set(leaderboard.columns))
+    assert len(leaderboard) == len(leaderboard_extra)
+    assert set(leaderboard_extra.columns).issuperset(set(extra_metrics))  # Assert that extra_metrics are present in output
+    num_models = len(predictor.get_model_names())
+    feature_importances = predictor.feature_importance(data=test_data)
+    original_features = set(train_data.columns)
+    original_features.remove(label)
+    assert set(feature_importances.index) == original_features
+    assert set(feature_importances.columns) == {"importance", "stddev", "p_value", "n", "p99_high", "p99_low"}
+    predictor.transform_features()
+    test_data_transformed = predictor.transform_features(data=test_data)
+    predictor.info()
 
-#     # Assert that transform_features=False works correctly
-#     y_pred = predictor.predict(test_data)
-#     y_pred_from_transform = predictor.predict(test_data_transformed, transform_features=False)
-#     assert y_pred.equals(y_pred_from_transform)
+    # Assert that transform_features=False works correctly
+    y_pred = predictor.predict(test_data)
+    y_pred_from_transform = predictor.predict(test_data_transformed, transform_features=False)
+    assert y_pred.equals(y_pred_from_transform)
 
-#     y_pred_proba = None
-#     if predictor.can_predict_proba:
-#         y_pred_proba = predictor.predict_proba(test_data)
-#         y_pred_proba_from_transform = predictor.predict_proba(test_data_transformed, transform_features=False)
-#         assert y_pred_proba.equals(y_pred_proba_from_transform)
+    y_pred_proba = None
+    if predictor.can_predict_proba:
+        y_pred_proba = predictor.predict_proba(test_data)
+        y_pred_proba_from_transform = predictor.predict_proba(test_data_transformed, transform_features=False)
+        assert y_pred_proba.equals(y_pred_proba_from_transform)
 
-#     assert predictor.get_model_names_persisted() == []  # Assert that no models were persisted during training
-#     assert predictor.unpersist_models() == []  # Assert that no models were unpersisted
+    assert predictor.get_model_names_persisted() == []  # Assert that no models were persisted during training
+    assert predictor.unpersist_models() == []  # Assert that no models were unpersisted
 
-#     persisted_models = predictor.persist_models(models="all", max_memory=None)
-#     assert set(predictor.get_model_names_persisted()) == set(persisted_models)  # Ensure all models are persisted
-#     assert predictor.persist_models(models="all", max_memory=None) == []  # Ensure that no additional models are persisted on repeated calls
-#     unpersised_models = predictor.unpersist_models()
-#     assert set(unpersised_models) == set(persisted_models)
-#     assert predictor.get_model_names_persisted() == []  # Assert that all models were unpersisted
+    persisted_models = predictor.persist_models(models="all", max_memory=None)
+    assert set(predictor.get_model_names_persisted()) == set(persisted_models)  # Ensure all models are persisted
+    assert predictor.persist_models(models="all", max_memory=None) == []  # Ensure that no additional models are persisted on repeated calls
+    unpersised_models = predictor.unpersist_models()
+    assert set(unpersised_models) == set(persisted_models)
+    assert predictor.get_model_names_persisted() == []  # Assert that all models were unpersisted
 
-#     # Raise exception
-#     with pytest.raises(NetworkXError):
-#         predictor.persist_models(models=["UNKNOWN_MODEL_1", "UNKNOWN_MODEL_2"])
+    # Raise exception
+    with pytest.raises(NetworkXError):
+        predictor.persist_models(models=["UNKNOWN_MODEL_1", "UNKNOWN_MODEL_2"])
 
-#     assert predictor.get_model_names_persisted() == []
+    assert predictor.get_model_names_persisted() == []
 
-#     assert predictor.unpersist_models(models=["UNKNOWN_MODEL_1", "UNKNOWN_MODEL_2"]) == []
+    assert predictor.unpersist_models(models=["UNKNOWN_MODEL_1", "UNKNOWN_MODEL_2"]) == []
 
-#     predictor.persist_models(models="all", max_memory=None)
-#     predictor.save()  # Save predictor while models are persisted: Intended functionality is that they won't be persisted when loaded.
-#     predictor_loaded = TabularPredictor.load(predictor.path)  # Assert that predictor loading works
-#     leaderboard_loaded = predictor_loaded.leaderboard(data=test_data)
-#     assert len(leaderboard) == len(leaderboard_loaded)
-#     assert predictor_loaded.get_model_names_persisted() == []  # Assert that models were not still persisted after loading predictor
+    predictor.persist_models(models="all", max_memory=None)
+    predictor.save()  # Save predictor while models are persisted: Intended functionality is that they won't be persisted when loaded.
+    predictor_loaded = TabularPredictor.load(predictor.path)  # Assert that predictor loading works
+    leaderboard_loaded = predictor_loaded.leaderboard(data=test_data)
+    assert len(leaderboard) == len(leaderboard_loaded)
+    assert predictor_loaded.get_model_names_persisted() == []  # Assert that models were not still persisted after loading predictor
 
-#     _assert_predictor_size(predictor=predictor)
-#     # Test cloning logic
-#     with pytest.raises(AssertionError):
-#         # Ensure don't overwrite existing predictor
-#         predictor.clone(path=predictor.path)
-#     path_clone = predictor.clone(path=predictor.path + "_clone")
-#     predictor_clone = TabularPredictor.load(path_clone)
-#     assert predictor.path != predictor_clone.path
-#     if predictor_clone.can_predict_proba:
-#         y_pred_proba_clone = predictor_clone.predict_proba(test_data)
-#         assert y_pred_proba.equals(y_pred_proba_clone)
-#     y_pred_clone = predictor_clone.predict(test_data)
-#     assert y_pred.equals(y_pred_clone)
-#     leaderboard_clone = predictor_clone.leaderboard(data=test_data)
-#     assert len(leaderboard) == len(leaderboard_clone)
+    _assert_predictor_size(predictor=predictor)
+    # Test cloning logic
+    with pytest.raises(AssertionError):
+        # Ensure don't overwrite existing predictor
+        predictor.clone(path=predictor.path)
+    path_clone = predictor.clone(path=predictor.path + "_clone")
+    predictor_clone = TabularPredictor.load(path_clone)
+    assert predictor.path != predictor_clone.path
+    if predictor_clone.can_predict_proba:
+        y_pred_proba_clone = predictor_clone.predict_proba(test_data)
+        assert y_pred_proba.equals(y_pred_proba_clone)
+    y_pred_clone = predictor_clone.predict(test_data)
+    assert y_pred.equals(y_pred_clone)
+    leaderboard_clone = predictor_clone.leaderboard(data=test_data)
+    assert len(leaderboard) == len(leaderboard_clone)
 
-#     # Test cloning for deployment logic
-#     path_clone_for_deployment_og = predictor.path + "_clone_for_deployment"
-#     with pytest.raises(FileNotFoundError):
-#         # Assert that predictor does not exist originally
-#         TabularPredictor.load(path_clone_for_deployment_og)
-#     path_clone_for_deployment = predictor.clone_for_deployment(path=path_clone_for_deployment_og)
-#     assert path_clone_for_deployment == path_clone_for_deployment_og
-#     predictor_clone_for_deployment = TabularPredictor.load(path_clone_for_deployment)
-#     assert predictor.path != predictor_clone_for_deployment.path
-#     if predictor_clone_for_deployment.can_predict_proba:
-#         y_pred_proba_clone_for_deployment = predictor_clone_for_deployment.predict_proba(test_data)
-#         assert y_pred_proba.equals(y_pred_proba_clone_for_deployment)
-#     y_pred_clone_for_deployment = predictor_clone_for_deployment.predict(test_data)
-#     assert y_pred.equals(y_pred_clone_for_deployment)
-#     leaderboard_clone_for_deployment = predictor_clone_for_deployment.leaderboard(data=test_data)
-#     assert len(leaderboard) >= len(leaderboard_clone_for_deployment)
-#     # Raise exception due to lacking fit artifacts
-#     with pytest.raises(FileNotFoundError):
-#         predictor_clone_for_deployment.refit_full()
+    # Test cloning for deployment logic
+    path_clone_for_deployment_og = predictor.path + "_clone_for_deployment"
+    with pytest.raises(FileNotFoundError):
+        # Assert that predictor does not exist originally
+        TabularPredictor.load(path_clone_for_deployment_og)
+    path_clone_for_deployment = predictor.clone_for_deployment(path=path_clone_for_deployment_og)
+    assert path_clone_for_deployment == path_clone_for_deployment_og
+    predictor_clone_for_deployment = TabularPredictor.load(path_clone_for_deployment)
+    assert predictor.path != predictor_clone_for_deployment.path
+    if predictor_clone_for_deployment.can_predict_proba:
+        y_pred_proba_clone_for_deployment = predictor_clone_for_deployment.predict_proba(test_data)
+        assert y_pred_proba.equals(y_pred_proba_clone_for_deployment)
+    y_pred_clone_for_deployment = predictor_clone_for_deployment.predict(test_data)
+    assert y_pred.equals(y_pred_clone_for_deployment)
+    leaderboard_clone_for_deployment = predictor_clone_for_deployment.leaderboard(data=test_data)
+    assert len(leaderboard) >= len(leaderboard_clone_for_deployment)
+    # Raise exception due to lacking fit artifacts
+    with pytest.raises(FileNotFoundError):
+        predictor_clone_for_deployment.refit_full()
 
-#     assert predictor.get_model_full_dict() == dict()
-#     predictor.refit_full()
-#     predictor.plot_ensemble_model()
-#     assert len(predictor.get_model_full_dict()) == num_models
-#     assert len(predictor.get_model_names()) == num_models * 2
-#     for model in predictor.get_model_names():
-#         predictor.predict(data=test_data, model=model)
-#     predictor.refit_full()  # Confirm that refit_models aren't further refit.
-#     assert len(predictor.get_model_full_dict()) == num_models
-#     assert len(predictor.get_model_names()) == num_models * 2
-#     predictor.delete_models(models_to_keep=[])  # Test that dry-run doesn't delete models
-#     assert len(predictor.get_model_names()) == num_models * 2
-#     predictor.predict(data=test_data)
-#     predictor.delete_models(models_to_keep=[], dry_run=False)  # Test that dry-run deletes models
-#     assert len(predictor.get_model_names()) == 0
-#     assert len(predictor.leaderboard()) == 0
-#     assert len(predictor.leaderboard(extra_info=True)) == 0
-#     # Assert that predictor can no longer predict
-#     try:
-#         predictor.predict(data=test_data)
-#     except:
-#         pass
-#     else:
-#         raise AssertionError("predictor.predict should raise exception after all models are deleted")
-#     # Assert that clone is not impacted by changes to original
-#     assert len(predictor_clone.leaderboard(data=test_data)) == len(leaderboard_clone)
-#     if predictor_clone.can_predict_proba:
-#         y_pred_proba_clone_2 = predictor_clone.predict_proba(data=test_data)
-#         assert y_pred_proba.equals(y_pred_proba_clone_2)
-#     y_pred_clone_2 = predictor_clone.predict(data=test_data)
-#     assert y_pred.equals(y_pred_clone_2)
-#     print("Tabular Advanced Functionality Test Succeeded.")
+    assert predictor.get_model_full_dict() == dict()
+    predictor.refit_full()
+    predictor.plot_ensemble_model()
+    assert len(predictor.get_model_full_dict()) == num_models
+    assert len(predictor.get_model_names()) == num_models * 2
+    for model in predictor.get_model_names():
+        predictor.predict(data=test_data, model=model)
+    predictor.refit_full()  # Confirm that refit_models aren't further refit.
+    assert len(predictor.get_model_full_dict()) == num_models
+    assert len(predictor.get_model_names()) == num_models * 2
+    predictor.delete_models(models_to_keep=[])  # Test that dry-run doesn't delete models
+    assert len(predictor.get_model_names()) == num_models * 2
+    predictor.predict(data=test_data)
+    predictor.delete_models(models_to_keep=[], dry_run=False)  # Test that dry-run deletes models
+    assert len(predictor.get_model_names()) == 0
+    assert len(predictor.leaderboard()) == 0
+    assert len(predictor.leaderboard(extra_info=True)) == 0
+    # Assert that predictor can no longer predict
+    try:
+        predictor.predict(data=test_data)
+    except:
+        pass
+    else:
+        raise AssertionError("predictor.predict should raise exception after all models are deleted")
+    # Assert that clone is not impacted by changes to original
+    assert len(predictor_clone.leaderboard(data=test_data)) == len(leaderboard_clone)
+    if predictor_clone.can_predict_proba:
+        y_pred_proba_clone_2 = predictor_clone.predict_proba(data=test_data)
+        assert y_pred_proba.equals(y_pred_proba_clone_2)
+    y_pred_clone_2 = predictor_clone.predict(data=test_data)
+    assert y_pred.equals(y_pred_clone_2)
+    print("Tabular Advanced Functionality Test Succeeded.")
 
 
 def _assert_predictor_size(predictor: TabularPredictor):
