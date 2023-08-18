@@ -1146,7 +1146,8 @@ def test_tabular_log_to_file():
     predictor = TabularPredictor(label="class", log_to_file=True, log_file_path=log_file).fit(train_data=train_data, hyperparameters={"DUMMY": {}})
     log = TabularPredictor.load_log(log_file_path=log_file)
     assert "TabularPredictor saved." in log[-1]
-    # os.remove(log_file)
+    os.chdir(os.getcwd)
+    os.remove(log_file)
 
     with pytest.raises(AssertionError):
         TabularPredictor.load_log()
