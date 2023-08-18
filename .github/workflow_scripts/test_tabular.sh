@@ -29,8 +29,8 @@ cd tabular/
 if [ -n "$ADDITIONAL_TEST_ARGS" ]
 then
     # pip3 uninstall -y ray
-    python3 -m pytest -s -v --junitxml=results.xml --runslow --durations=10 "$ADDITIONAL_TEST_ARGS" tests
+    python3 -m pytest -s -v --junitxml=results.xml --durations=10 "$ADDITIONAL_TEST_ARGS" tests
 else
     # pip3 uninstall -y ray
-    python3 -m pytest -s -v --junitxml=results.xml --runslow --durations=10 tests
+    python3 -m pytest -s -v --junitxml=results.xml --durations=10 tests
 fi
