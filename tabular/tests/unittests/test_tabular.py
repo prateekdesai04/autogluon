@@ -1458,59 +1458,59 @@ def _assert_predictor_size(predictor: TabularPredictor):
     assert predictor_size_disk == predictor_size_disk_per_file.sum()
 
 
-# def test_advanced_functionality_bagging():
-#     fast_benchmark = True
-#     dataset = {
-#         "url": "https://autogluon.s3.amazonaws.com/datasets/AdultIncomeBinaryClassification.zip",
-#         "name": "AdultIncomeBinaryClassification",
-#         "problem_type": BINARY,
-#     }
-#     label = "class"
-#     directory_prefix = "./datasets/"
-#     train_file = "train_data.csv"
-#     test_file = "test_data.csv"
-#     train_data, test_data = load_data(directory_prefix=directory_prefix, train_file=train_file, test_file=test_file, name=dataset["name"], url=dataset["url"])
-#     if fast_benchmark:  # subsample for fast_benchmark
-#         subsample_size = 500
-#         train_data = train_data.head(subsample_size)
-#         test_data = test_data.head(subsample_size)
-#     print(f"Evaluating Advanced Functionality (Bagging) on Benchmark Dataset {dataset['name']}")
-#     directory = directory_prefix + "advanced/" + dataset["name"] + "/"
-#     savedir = directory + "AutogluonOutput/"
-#     shutil.rmtree(savedir, ignore_errors=True)  # Delete AutoGluon output directory to ensure previous runs' information has been removed.
-#     predictor = TabularPredictor(label=label, path=savedir).fit(
-#         train_data,
-#         num_bag_folds=2,
-#         hyperparameters={"GBM": {}},
-#     )
+def test_advanced_functionality_bagging():
+    fast_benchmark = True
+    dataset = {
+        "url": "https://autogluon.s3.amazonaws.com/datasets/AdultIncomeBinaryClassification.zip",
+        "name": "AdultIncomeBinaryClassification",
+        "problem_type": BINARY,
+    }
+    label = "class"
+    directory_prefix = "./datasets/"
+    train_file = "train_data.csv"
+    test_file = "test_data.csv"
+    train_data, test_data = load_data(directory_prefix=directory_prefix, train_file=train_file, test_file=test_file, name=dataset["name"], url=dataset["url"])
+    if fast_benchmark:  # subsample for fast_benchmark
+        subsample_size = 500
+        train_data = train_data.head(subsample_size)
+        test_data = test_data.head(subsample_size)
+    print(f"Evaluating Advanced Functionality (Bagging) on Benchmark Dataset {dataset['name']}")
+    directory = directory_prefix + "advanced/" + dataset["name"] + "/"
+    savedir = directory + "AutogluonOutput/"
+    shutil.rmtree(savedir, ignore_errors=True)  # Delete AutoGluon output directory to ensure previous runs' information has been removed.
+    predictor = TabularPredictor(label=label, path=savedir).fit(
+        train_data,
+        num_bag_folds=2,
+        hyperparameters={"GBM": {}},
+    )
 
-#     expected_num_models = 2
-#     assert len(predictor.get_model_names()) == expected_num_models
+    expected_num_models = 2
+    assert len(predictor.get_model_names()) == expected_num_models
 
-#     _assert_predict_dict_identical_to_predict(predictor=predictor, data=test_data)
-#     _assert_predict_proba_dict_identical_to_predict_proba(predictor=predictor, data=test_data)
+    _assert_predict_dict_identical_to_predict(predictor=predictor, data=test_data)
+    _assert_predict_proba_dict_identical_to_predict_proba(predictor=predictor, data=test_data)
 
-#     oof_pred_proba = predictor.get_oof_pred_proba()
-#     assert len(oof_pred_proba) == len(train_data)
+    oof_pred_proba = predictor.get_oof_pred_proba()
+    assert len(oof_pred_proba) == len(train_data)
 
-#     predict_proba_dict_oof = predictor.predict_proba_multi()
-#     for m in predictor.get_model_names():
-#         predict_proba_oof = predictor.get_oof_pred_proba(model=m)
-#         assert predict_proba_oof.equals(predict_proba_dict_oof[m])
+    predict_proba_dict_oof = predictor.predict_proba_multi()
+    for m in predictor.get_model_names():
+        predict_proba_oof = predictor.get_oof_pred_proba(model=m)
+        assert predict_proba_oof.equals(predict_proba_dict_oof[m])
 
-#     score_oof = predictor.evaluate_predictions(train_data[label], oof_pred_proba)
-#     model_best = predictor.get_model_best()
+    score_oof = predictor.evaluate_predictions(train_data[label], oof_pred_proba)
+    model_best = predictor.get_model_best()
 
-#     predictor.refit_full()
-#     assert len(predictor.get_model_full_dict()) == expected_num_models
-#     assert len(predictor.get_model_names()) == expected_num_models * 2
+    predictor.refit_full()
+    assert len(predictor.get_model_full_dict()) == expected_num_models
+    assert len(predictor.get_model_names()) == expected_num_models * 2
 
-#     model_best_refit = predictor.get_model_best()
-#     assert model_best != model_best_refit
+    model_best_refit = predictor.get_model_best()
+    assert model_best != model_best_refit
 
-#     # assert that refit model uses original model's OOF predictions
-#     oof_pred_proba_refit = predictor.get_oof_pred_proba()
-#     assert oof_pred_proba.equals(oof_pred_proba_refit)
+    # assert that refit model uses original model's OOF predictions
+    oof_pred_proba_refit = predictor.get_oof_pred_proba()
+    assert oof_pred_proba.equals(oof_pred_proba_refit)
 
 
 def load_data(directory_prefix, train_file, test_file, name, url=None):
