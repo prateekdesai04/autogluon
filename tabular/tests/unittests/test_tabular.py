@@ -1014,7 +1014,7 @@ def test_tabular_stack2():
     run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 def test_tabular_bagstack():
     ############ Benchmark options you can set: ########################
     num_stack_levels = 2
@@ -1057,7 +1057,7 @@ def test_tabular_bagstack():
     )
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 def test_tabular_bagstack_use_bag_holdout():
     ############ Benchmark options you can set: ########################
     num_stack_levels = 2
@@ -1146,8 +1146,7 @@ def test_tabular_log_to_file():
     predictor = TabularPredictor(label="class", log_to_file=True, log_file_path=log_file).fit(train_data=train_data, hyperparameters={"DUMMY": {}})
     log = TabularPredictor.load_log(log_file_path=log_file)
     assert "TabularPredictor saved." in log[-1]
-    os.chdir(os.getcwd())
-    os.remove(log_file)
+    # os.remove(log_file)
 
     with pytest.raises(AssertionError):
         TabularPredictor.load_log()
