@@ -24,7 +24,6 @@ import shutil
 import tempfile
 import warnings
 from random import seed
-import logging
 
 import numpy as np
 import pandas as pd
@@ -772,7 +771,7 @@ def test_tabularHPO():
     run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
 
 
-@pytest.mark.slow
+# @pytest.mark.slow
 def test_tabular_feature_prune():
     ############ Benchmark options you can set: ########################
     perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
