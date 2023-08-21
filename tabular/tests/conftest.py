@@ -20,7 +20,7 @@ def pytest_addoption(parser):
     parser.addoption("--runslow", action="store_true", default=False, help="run slow tests")
     parser.addoption("--runregression", action="store_true", default=False, help="run regression tests")
     parser.addoption("--runpyodide", action="store_true", default=False, help="run Pyodide tests")
-    parser.adoption("--runplatform", action="store_true", default=False, help="run all skipped platform tests")
+    parser.addoption("--runplatform", action="store_true", default=False, help="run all skipped platform tests")
 
 
 def pytest_configure(config):
