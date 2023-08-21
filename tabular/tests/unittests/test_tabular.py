@@ -696,8 +696,8 @@ def test_pseudolabeling():
                     assert False, error_msg + "unlabeled test data, best quality" + error_suffix
 
 
-# @pytest.mark.slow
-@pytest.mark.platform
+@pytest.mark.slow
+# @pytest.mark.platform
 def test_tabularHPObagstack():
     ############ Benchmark options you can set: ########################
     perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
