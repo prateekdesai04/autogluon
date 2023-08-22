@@ -29,7 +29,7 @@ cd tabular/
 echo "Test Arguments: $ADDITIONAL_TEST_ARGS"
 if [ -n "$ADDITIONAL_TEST_ARGS" ]
 then
-    python3 -m pytest -s -v --junitxml=results.xml --runslow --durations=10 "$ADDITIONAL_TEST_ARGS" tests
+    python -m pytest -s -v --junitxml=results.xml --runslow --durations=10 "$ADDITIONAL_TEST_ARGS" tests
 else
-    python3 -m pytest -s -v --junitxml=results.xml --runslow --runplatform --durations=10 tests
+    python -m pytest -s -v --junitxml=results.xml --runslow --runplatform --durations=10 tests
 fi

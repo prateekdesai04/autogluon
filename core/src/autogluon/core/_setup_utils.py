@@ -28,7 +28,6 @@ DEPENDENT_PACKAGES = {
     "Pillow": ">=9.3,<9.6",  # "<{N+2}" upper cap
     "torch": ">=1.13,<2.1",  # "<{N+1}" upper cap
     "pytorch-lightning": ">=2.0.0,<2.1",  # "<{N+1}" upper cap
-    "pygraphviz": ">=1.7,<1.12"
 }
 if LITE_MODE:
     DEPENDENT_PACKAGES = {package: version for package, version in DEPENDENT_PACKAGES.items() if package not in ["psutil", "Pillow", "timm"]}
