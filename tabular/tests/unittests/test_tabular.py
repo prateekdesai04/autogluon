@@ -138,7 +138,7 @@ def test_advanced_functionality():
     predictor: TabularPredictor = TabularPredictor(label=label, path=savedir_predictor_original).fit(train_data)
     leaderboard = predictor.leaderboard(data=test_data)
     #Commented by Prateek
-    # predictor.plot_ensemble_model()
+    predictor.plot_ensemble_model()
     extra_metrics = ["accuracy", "roc_auc", "log_loss"]
     test_data_no_label = test_data.drop(columns=[label])
     with pytest.raises(ValueError):
@@ -249,7 +249,7 @@ def test_advanced_functionality():
     assert predictor.get_model_full_dict() == dict()
     predictor.refit_full()
     # Commented by Prateek
-    # predictor.plot_ensemble_model()
+    predictor.plot_ensemble_model()
     assert len(predictor.get_model_full_dict()) == num_models
     assert len(predictor.get_model_names()) == num_models * 2
     for model in predictor.get_model_names():
