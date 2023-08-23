@@ -1,17 +1,17 @@
 function setup_build_env {
-    python3 -m pip install --upgrade pip
-    python3 -m pip install tox
-    python3 -m pip install flake8
-    python3 -m pip install "black>=22.3,<23.0"
-    python3 -m pip install isort>=5.10
-    python3 -m pip install bandit
-    python3 -m pip install packaging
+    python -m pip install --upgrade pip
+    python -m pip install tox
+    python -m pip install flake8
+    python -m pip install "black>=22.3,<23.0"
+    python -m pip install isort>=5.10
+    python -m pip install bandit
+    python -m pip install packaging
 }
 
 function setup_build_contrib_env {
-    python3 -m pip install --upgrade pip
-    python3 -m pip install -r $(dirname "$0")/../../docs/requirements_doc.txt
-    python3 -m pip install git+https://github.com/zhanghang1989/d2l-book
+    python -m pip install --upgrade pip
+    python -m pip install -r $(dirname "$0")/../../docs/requirements_doc.txt
+    python -m pip install git+https://github.com/zhanghang1989/d2l-book
     export AG_DOCS=1
     export AUTOMM_TUTORIAL_MODE=1 # Disable progress bar in AutoMMPredictor
 }
@@ -25,18 +25,18 @@ function setup_benchmark_env {
 function setup_hf_model_mirror {
     pip3 install PyYAML
     SUB_FOLDER="$1"
-    python3 $(dirname "$0")/setup_hf_model_mirror.py --model_list_file $(dirname "$0")/../../multimodal/tests/hf_model_list.yaml --sub_folder $SUB_FOLDER
+    python $(dirname "$0")/setup_hf_model_mirror.py --model_list_file $(dirname "$0")/../../multimodal/tests/hf_model_list.yaml --sub_folder $SUB_FOLDER
 }
 
 function install_local_packages {
     while(($#)) ; do
-        python3 -m pip install --upgrade -e $1
+        python -m pip install --upgrade -e $1
         shift
     done
 }
 
 function install_tabular {
-    python3 -m pip install --upgrade pygraphviz
+    python -m pip install --upgrade pygraphviz
     install_local_packages "tabular/$1"
 }
 
@@ -51,7 +51,7 @@ function install_multimodal_no_groundingdino {
     source $(dirname "$0")/setup_mmcv.sh
     
     # launch different process for each test to make sure memory is released
-    python3 -m pip install --upgrade pytest-xdist
+    python -m pip install --upgrade pytest-xdist
     install_local_packages "multimodal/$1"
     setup_mmcv
     # python3 -m pip install --upgrade "mmocr<1.0"  # not compatible with mmcv 2.0
@@ -62,7 +62,7 @@ function install_multimodal {
     source $(dirname "$0")/setup_groundingdino.sh
     
     # launch different process for each test to make sure memory is released
-    python3 -m pip install --upgrade pytest-xdist
+    python -m pip install --upgrade pytest-xdist
     install_local_packages "multimodal/$1"
     setup_mmcv
     # python3 -m pip install --upgrade "mmocr<1.0"  # not compatible with mmcv 2.0
