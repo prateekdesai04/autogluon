@@ -1,6 +1,5 @@
-alias python3=python
-
 function setup_build_env {
+    alias python3=python
     python3 -m pip install --upgrade pip
     python3 -m pip install tox
     python3 -m pip install flake8
@@ -12,6 +11,7 @@ function setup_build_env {
 }
 
 function setup_build_contrib_env {
+    alias python3=python
     python3 -m pip install --upgrade pip
     python3 -m pip install -r $(dirname "$0")/../../docs/requirements_doc.txt
     python3 -m pip install git+https://github.com/zhanghang1989/d2l-book
@@ -20,18 +20,21 @@ function setup_build_contrib_env {
 }
 
 function setup_benchmark_env {
+    alias python3=python
     pip install -U autogluon.bench
     git clone https://github.com/autogluon/autogluon-dashboard.git
     pip install -e ./autogluon-dashboard
 }
 
 function setup_hf_model_mirror {
+    alias python3=python
     pip3 install PyYAML
     SUB_FOLDER="$1"
     python3 $(dirname "$0")/setup_hf_model_mirror.py --model_list_file $(dirname "$0")/../../multimodal/tests/hf_model_list.yaml --sub_folder $SUB_FOLDER
 }
 
 function install_local_packages {
+    alias python3=python
     while(($#)) ; do
         python3 -m pip install --upgrade -e $1
         shift
@@ -39,16 +42,19 @@ function install_local_packages {
 }
 
 function install_tabular {
+    alias python3=python
     python3 -m pip install --upgrade pygraphviz
     install_local_packages "tabular/$1"
 }
 
 function install_tabular_platforms {
+    alias python3=python
     # pygraphviz will be installed with conda in platform tests
     install_local_packages "tabular/$1"
 }
 
 function install_multimodal_no_groundingdino {
+    alias python3=python
     # groundingdino has issue when installing on Windows
     # https://github.com/IDEA-Research/GroundingDINO/issues/57
     source $(dirname "$0")/setup_mmcv.sh
@@ -61,6 +67,7 @@ function install_multimodal_no_groundingdino {
 }
 
 function install_multimodal {
+    alias python3=python
     source $(dirname "$0")/setup_mmcv.sh
     source $(dirname "$0")/setup_groundingdino.sh
 
@@ -73,24 +80,28 @@ function install_multimodal {
 }
 
 function install_all {
+    alias python3=python
     install_local_packages "common/[tests]" "core/[all]" "features/" "tabular/[all,tests]" "timeseries/[all,tests]" "eda/[tests]"
     install_multimodal "[tests]"
     install_local_packages "autogluon/"
 }
 
 function install_all_windows {
+    alias python3=python
     install_local_packages "common/[tests]" "core/[all]" "features/" "tabular/[all,tests]" "timeseries/[all,tests]" "eda/[tests]"
     install_multimodal_no_groundingdino "[tests]"
     install_local_packages "autogluon/"
 }
 
 function install_all_no_tests {
+    alias python3=python
     install_local_packages "common/" "core/[all]" "features/" "tabular/[all]" "timeseries/[all]" "eda/"
     install_multimodal
     install_local_packages "autogluon/"
 }
 
 function build_pkg {
+    alias python3=python
     while(($#)) ; do
         cd "$1"/
         python setup.py sdist bdist_wheel
@@ -100,5 +111,6 @@ function build_pkg {
 }
 
 function build_all {
+    alias python3=python
     build_pkg "common" "core" "features" "tabular" "multimodal" "timeseries" "autogluon" "eda"
 }
