@@ -1,3 +1,5 @@
+alias python3=python
+
 function setup_build_env {
     python3 -m pip install --upgrade pip
     python3 -m pip install tox
