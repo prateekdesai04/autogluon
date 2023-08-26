@@ -9,7 +9,11 @@ source $(dirname "$0")/env_setup.sh
 
 if [ "$OSTYPE" == "msys" ]
 then
-    alias python=python3
+    echo "Python3 Version"
+    python3 --version
+    alias python3=python
+    echo "Post alias Python3 version"
+    python3 --version
 fi
 
 setup_build_env
