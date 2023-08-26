@@ -7,6 +7,11 @@ IS_PLATFORM_TEST=$2
 
 source $(dirname "$0")/env_setup.sh
 
+if [ "$OSTYPE" == "msys" ]
+then
+    alias python=python3
+fi
+
 setup_build_env
 
 if ! [ "$IS_PLATFORM_TEST" = "true" ]
@@ -26,19 +31,8 @@ else
 fi
 
 cd tabular/
-if [ "$OSTYPE" == "msys" ]
-then
-    # to skip certain tests on Windows platform
-    python3 -m pytest --junitxml=results.xml --runslow tests
-elif [ -n "$ADDITIONAL_TEST_ARGS" ]
-then
-    echo "OS Type: $OSTYPE"
-    echo "Python Version"
-    python --version
-    echo "Python3 Version"
-    python3 --version
-    echo "Python2 Version"
-    python2 --version 
+if [ -n "$ADDITIONAL_TEST_ARGS" ]
+then 
     python3 -m pytest --junitxml=results.xml --runslow "$ADDITIONAL_TEST_ARGS" tests
 else
     python3 -m pytest --junitxml=results.xml --runslow tests
