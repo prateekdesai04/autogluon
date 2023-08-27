@@ -33,7 +33,10 @@ else
 fi
 
 cd tabular/
-if [ -n "$ADDITIONAL_TEST_ARGS" ]
+if [ "$OSTYPE" == "msys" ] && [ -n "$ADDITIONAL_TEST_ARGS" ]
+then
+    python -m pytest --junitxml=results.xml --runslow "$ADDITIONAL_TEST_ARGS" tests
+elif [ -n "$ADDITIONAL_TEST_ARGS" ]
 then 
     python3 -m pytest --junitxml=results.xml --runslow "$ADDITIONAL_TEST_ARGS" tests
 else
