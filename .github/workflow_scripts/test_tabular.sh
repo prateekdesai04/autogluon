@@ -7,6 +7,13 @@ IS_PLATFORM_TEST=$2
 
 source $(dirname "$0")/env_setup.sh
 
+if [ "$OSTYPE" == "msys" ]
+then
+    source $(dirname "$0")/env_setup_windows.sh
+else
+    source $(dirname "$0")/env_setup.sh
+fi
+
 setup_build_env
 
 if ! [ "$IS_PLATFORM_TEST" = "true" ]
@@ -26,8 +33,11 @@ else
 fi
 
 cd tabular/
-if [ -n "$ADDITIONAL_TEST_ARGS" ]
+if [ "$OSTYPE" == "msys" ] && [ -n "$ADDITIONAL_TEST_ARGS" ]
 then
+    python -m pytest --junitxml=results.xml --runslow "$ADDITIONAL_TEST_ARGS" tests
+elif [ -n "$ADDITIONAL_TEST_ARGS" ]
+then 
     python3 -m pytest --junitxml=results.xml --runslow "$ADDITIONAL_TEST_ARGS" tests
 else
     python3 -m pytest --junitxml=results.xml --runslow tests
