@@ -11,6 +11,7 @@ if [ "$OSTYPE" == "msys" ]
 then
     echo "Python3 Version"
     python3 --version
+    pip uninstall python3
     alias python3=python
     echo "Post alias Python3 version"
     python3 --version
