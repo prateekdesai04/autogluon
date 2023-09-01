@@ -1,5 +1,6 @@
 name: Benchmark-Master
 on:
+  # This will run on a schedule rather than a dispatch, dispatch is just used to test
   workflow_dispatch:
     inputs:
       repository:
