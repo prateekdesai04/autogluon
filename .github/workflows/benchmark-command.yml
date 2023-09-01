@@ -67,9 +67,32 @@ jobs:
             [Benchmark Output][1]
 
             [1]: ${{ steps.vars.outputs.run-url }}
+  
+  generate_bench_configs:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Setup Env Vars
+        uses: ./.github/actions/setup-env-vars
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmarkConfig
+          role-duration-seconds: 3600
+          aws-region: us-east-1
+      - name: Generate bench configs (For Push)
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ env.GIT_REPO }} ${{ env.BRANCH }} ${{ env.SHORT_SHA }}
+      - name: Generate bench configs (For Pull Request)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ env.GIT_REPO }} ${{ env.BRANCH }} ${{ env.SHORT_SHA }} ${{ env.PR_NUMBER }}
 
   benchmark:
-    needs: setup
+    needs: generate_bench_configs
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -119,28 +142,29 @@ jobs:
         with:
           name: dashboard-website
           path: ./website.txt
+
   
-  dashboard: 
-    needs: benchmark
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: Download website.txt
-        uses: actions/download-artifact@v3
-        with:
-          name: dashboard-website
-      - name: get dashboard website
-        id: website
-        run: |
-          body="$(cat website.txt)"
-          echo ::set-output name=body::$body
-      - name: Comment Dashboard Website Link on PR
-        uses: peter-evans/create-or-update-comment@v2.0.0
-        with:
-          token: ${{ secrets.PAT }}
-          repository: ${{ github.event.inputs.repository }}
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: ${{ steps.website.outputs.body }}
+  # dashboard: 
+  #   needs: benchmark
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #   steps:
+  #     - name: Download website.txt
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: dashboard-website
+  #     - name: get dashboard website
+  #       id: website
+  #       run: |
+  #         body="$(cat website.txt)"
+  #         echo ::set-output name=body::$body
+  #     - name: Comment Dashboard Website Link on PR
+  #       uses: peter-evans/create-or-update-comment@v2.0.0
+  #       with:
+  #         token: ${{ secrets.PAT }}
+  #         repository: ${{ github.event.inputs.repository }}
+  #         comment-id: ${{ github.event.inputs.comment-id }}
+  #         body: ${{ steps.website.outputs.body }}
       
