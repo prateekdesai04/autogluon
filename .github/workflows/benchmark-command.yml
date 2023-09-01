@@ -84,13 +84,13 @@ jobs:
           aws-region: us-east-1
       - name: Generate bench configs (For Push)
         run: echo "Event name is ${{ github.event_name }}" 
-      #   if: ${{ github.event_name == 'push' }}
-      #   run: |
-      #     /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ env.GIT_REPO }} ${{ env.BRANCH }} ${{ env.SHORT_SHA }}
-      # - name: Generate bench configs (For Pull Request)
-      #   if: ${{ github.event_name == 'pull_request' }}
-      #   run: |
-      #     /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ env.GIT_REPO }} ${{ env.BRANCH }} ${{ env.SHORT_SHA }} ${{ env.PR_NUMBER }}
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ env.GIT_REPO }} ${{ env.BRANCH }} ${{ env.SHORT_SHA }}
+      - name: Generate bench configs (For Pull Request)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ env.GIT_REPO }} ${{ env.BRANCH }} ${{ env.SHORT_SHA }} ${{ env.PR_NUMBER }}
 
   benchmark:
     needs: generate_bench_configs
