@@ -83,7 +83,5 @@ if branch_name != "master":
             "--no-clean-data",
         ]
     )
-
 else:
-
     print("\nEvaluation not performed!")
