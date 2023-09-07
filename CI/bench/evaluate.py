@@ -70,6 +70,9 @@ if branch_name != "master":
             paths.append(os.path.basename(file))
             frameworks += list(df["framework"].unique())
 
+    print("\nPrinting Path and Framework post collection")
+    print(paths)
+    print(frameworks)
     subprocess.run(
         [
             "agbench",
