@@ -34,7 +34,7 @@ python CI/bench/evaluate.py --config_path ./ag_bench_runs/tabular/ --time_limit 
 
 for file in ./results/*; do
     # Check if the file does not start with "master"
-    if [ "$(basename "$file")" != "master"* ]
+    if [[ "$(basename "$file")" != "master"* ]]
     then
         aws s3 cp "$file" "s3://autogluon-ci-benchmark/cleaned/$BRANCH_OR_PR_NUMBER/$SHA/$(basename "$file")"
         aws s3 rm --recursive s3://autogluon-ci-benchmark/cleaned/$BRANCH_OR_PR_NUMBER/latest/$(basename "$file")

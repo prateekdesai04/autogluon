@@ -60,7 +60,6 @@ subprocess.run(
 if branch_name != "master":
 
     print("\nThis is PR so we evaluate")
-
     paths = []
     frameworks = []
     for file in os.listdir("./results"):
@@ -69,7 +68,9 @@ if branch_name != "master":
             df = pd.read_csv(file)
             paths.append(os.path.basename(file))
             frameworks += list(df["framework"].unique())
-
+    
+    paths = ["--paths " + path for path in paths]
+    frameworks = ["--frameworks-run " + framework for framework in frameworks]
     print("\nPrinting Path and Framework post collection")
     print(paths)
     print(frameworks)
@@ -77,12 +78,10 @@ if branch_name != "master":
         [
             "agbench",
             "evaluate-amlb-results",
-            "--frameworks-run",
-            f"{','.join(frameworks)}",
+            *frameworks,
             "--results-dir-input",
             "./results",
-            "--paths",
-            f"{','.join(paths)}",
+            *paths,
             "--no-clean-data",
         ]
     )
