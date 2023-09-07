@@ -69,8 +69,21 @@ if branch_name != "master":
             paths.append(os.path.basename(file))
             frameworks += list(df["framework"].unique())
     
-    paths = ["--paths " + path for path in paths]
-    frameworks = ["--frameworks-run " + framework for framework in frameworks]
+
+    modified_list_paths = []
+    modified_list_frameworks = []
+
+    for path in paths:
+        modified_list_paths.append('--paths')
+        modified_list_paths.append(path)
+
+    for framework in frameworks:
+        modified_list_frameworks.append('--frameworks-run')
+        modified_list_frameworks.append(framework)
+        
+    paths = modified_list_paths
+    frameworks = modified_list_frameworks
+
     print("\nPrinting Path and Framework post collection")
     print(paths)
     print(frameworks)
