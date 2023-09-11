@@ -29,6 +29,9 @@ then
     mv "./results/$master_cleaned_file" "./results/$new_master_cleaned_file"
 fi
 
+echo "Printing the config path"
+ls ./ag_bench_runs/tabular/
+
 #run evaluation
 python CI/bench/evaluate.py --config_path ./ag_bench_runs/tabular/ --time_limit $TIME_LIMIT --branch_name $BRANCH_OR_PR_NUMBER
 
@@ -36,10 +39,12 @@ for file in ./results/*; do
     # Check if the file does not start with "master"
     if [[ "$(basename "$file")" != "master"* ]]
     then
+        echo "I am not in master!!!"
         aws s3 cp "$file" "s3://autogluon-ci-benchmark/cleaned/$BRANCH_OR_PR_NUMBER/$SHA/$(basename "$file")"
         aws s3 rm --recursive s3://autogluon-ci-benchmark/cleaned/$BRANCH_OR_PR_NUMBER/latest/$(basename "$file")
         aws s3 cp --recursive ./results s3://autogluon-ci-benchmark/cleaned/$BRANCH_OR_PR_NUMBER/latest/$(basename "$file")
     else
+        echo "I am in master!!!"
         aws s3 cp "$file" "s3://autogluon-ci-benchmark/cleaned/master/$SHA/$(basename "$file")"
         aws s3 rm --recursive s3://autogluon-ci-benchmark/cleaned/master/latest/$(basename "$file")
         aws s3 cp --recursive ./results s3://autogluon-ci-benchmark/cleaned/master/latest/$(basename "$file")
