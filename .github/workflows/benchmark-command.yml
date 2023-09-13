@@ -82,16 +82,13 @@ jobs:
           role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmarkConfig
           role-duration-seconds: 3600
           aws-region: us-east-1
-      - name: Get Pull Request Number
-        id: get-pr-number
-        run: |
-          pr_number=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.inputs.comment-id }}" | \
-            jq -r '.number')
-          echo "::set-output name=pr-number::$pr_number"
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
       - name: Generate AMLB User Dir (For Pull Request)
         run: |
-          /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ github.repository }} ${{ steps.get-pr-number.outputs.pr-number }} ${{ github.sha }}
+          /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ github.repository }} ${{ steps.extract_branch.outputs.branch }} ${{ github.sha }}
 
   benchmark:
     needs: generate_amlb_user_dir
@@ -138,7 +135,7 @@ jobs:
         run: |
           nvm install 20
           npm install -g aws-cdk
-          /bin/bash ./.github/workflow_scripts/run_benchmark.sh ${{ github.event.inputs.module }} ${{ github.event.inputs.preset }} ${{ github.event.inputs.benchmark }} ${{ github.event.inputs.time_limit }} ${{ steps.get-pr-number.outputs.pr-number }} ${{ github.sha }}
+          /bin/bash ./.github/workflow_scripts/run_benchmark.sh ${{ github.event.inputs.module }} ${{ github.event.inputs.preset }} ${{ github.event.inputs.benchmark }} ${{ github.event.inputs.time_limit }} ${{ steps.extract_branch.outputs.branch }} ${{ github.sha }}
       - name: Upload website.txt
         uses: actions/upload-artifact@v3
         with:
