@@ -83,12 +83,12 @@ jobs:
           role-duration-seconds: 3600
           aws-region: us-east-1
       - name: Get Pull Request Number
-      id: get-pr-number
-      run: |
-        pr_number=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-          "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.inputs.comment-id }}" | \
-          jq -r '.number')
-        echo "::set-output name=pr-number::$pr_number"
+        id: get-pr-number
+        run: |
+          pr_number=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.inputs.comment-id }}" | \
+            jq -r '.number')
+          echo "::set-output name=pr-number::$pr_number"
       - name: Generate AMLB User Dir (For Pull Request)
         run: |
           /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ github.repository }} ${{ steps.get-pr-number.outputs.pr-number }} ${{ github.sha }}
