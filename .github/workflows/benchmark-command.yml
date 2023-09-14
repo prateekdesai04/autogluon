@@ -86,7 +86,7 @@ jobs:
         shell: bash
         run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
-      - name: Generate AMLB User Dir (For Pull Request)
+      - name: Generate AMLB User Dir
         run: |
           /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ github.repository }} ${{ steps.extract_branch.outputs.branch }} ${{ github.sha }}
 

@@ -29,8 +29,6 @@ with open(config_file, "r") as f:
     config = yaml.safe_load(f)
     benchmark_name = config["benchmark_name"]
 
-print("\nPrinting Benchmark Name: ", benchmark_name)
-
 subprocess.run(
     [
         "agbench",
@@ -58,10 +56,8 @@ subprocess.run(
     ]
 )
 
-# if it is a PR then perform the evaluation as well 
+# If it is a PR then perform the evaluation w.r.t cleaned master bench results
 if branch_name != "master":
-
-    print("\nThis is PR so we evaluate")
     paths = []
     frameworks = []
     for file in os.listdir("./results"):
@@ -70,7 +66,6 @@ if branch_name != "master":
             df = pd.read_csv(file)
             paths.append(os.path.basename(file))
             frameworks += list(df["framework"].unique())
-    
 
     modified_list_paths = []
     modified_list_frameworks = []
@@ -85,10 +80,6 @@ if branch_name != "master":
         
     paths = modified_list_paths
     frameworks = modified_list_frameworks
-
-    print("\nPrinting Path and Framework post collection")
-    print(paths)
-    print(frameworks)
     subprocess.run(
         [
             "agbench",
@@ -100,5 +91,3 @@ if branch_name != "master":
             "--no-clean-data",
         ]
     )
-else:
-    print("\nEvaluation not performed as branch is master!")
