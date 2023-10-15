@@ -25,7 +25,7 @@ agbench generate-cloud-config \
 --metrics-bucket $METRICS_BUCKET \
 --instance $INSTANCE_TYPE \
 --framework $FRAMEWORK \
+--amlb-user-dir $(dirname "$0")/amlb_user_dir \
 --amlb-benchmark $BENCHMARK \
 --amlb-constraint $TIME_LIMIT \
---amlb-user-dir $(dirname "$0")/amlb_user_dir \
 --git-uri-branch https://github.com/openml/automlbenchmark.git#stable
