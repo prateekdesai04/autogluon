@@ -7,7 +7,7 @@ on:
     - cron: '00 09 * * SUN' #  UTC 9:00(2:00 PST Time) every Sunday
 
 env:
-  AG_PRESET: medium
+  # AG_PRESET: medium
   AG_BRANCH_NAME: master
   
 permissions:
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        AG_PARAMS: ['tabular-small-1h8c', 'timeseries-test-test101']
+        AG_PARAMS: ['tabular-small-1h8c-medium', 'timeseries-test-test101-dev']
     defaults:
       run:
         shell: bash
@@ -80,4 +80,5 @@ jobs:
           AG_MODULE=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f1)
           AG_BENCHMARK=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f2)
           AG_TIME_LIMIT=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f3)
-          /bin/bash ./.github/workflow_scripts/run_benchmark.sh $AG_MODULE ${{ env.AG_PRESET }} $AG_BENCHMARK $AG_TIME_LIMIT ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
+          AG_PRESET=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f4)
+          /bin/bash ./.github/workflow_scripts/run_benchmark.sh $AG_MODULE $AG_PRESET $AG_BENCHMARK $AG_TIME_LIMIT ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
