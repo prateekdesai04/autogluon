@@ -72,7 +72,7 @@ jobs:
           role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmark
           role-duration-seconds: 14400
           aws-region: us-east-1
-      - name: "Run benchmark - ${{ matrix.AG_PARAMS == 'tabular-small-1h8c' ? 'Tabular' : matrix.AG_PARAMS == 'timeseries-test-test101' ? 'Timeseries' : 'Invalid Combination' }}"
+      - name: Run benchmark
         shell: bash -l {0}
         run: |
           nvm install 20
