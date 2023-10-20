@@ -17,7 +17,7 @@ parser.add_argument("--branch_name", help="if it happens to be master then just 
 args = parser.parse_args()
 
 config_path = args.config_path
-module_name = args.module
+module_name = args.module_name
 time_limit = args.time_limit
 branch_name = args.branch_name
 
