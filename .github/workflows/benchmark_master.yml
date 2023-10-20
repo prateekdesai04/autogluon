@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        AG_PARAMS: ['tabular-small-1h8c-medium', 'timeseries-test-test101-dev']
+        AG_PARAMS: ['tabular-small-1h8c-medium', 'timeseries-timeseries_test-test101-dev']
     defaults:
       run:
         shell: bash
