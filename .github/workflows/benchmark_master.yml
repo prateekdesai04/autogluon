@@ -38,9 +38,9 @@ jobs:
   benchmark:
     needs: generate_amlb_user_dir
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        AG_PARAMS: ['tabular-small-1h8c-medium', 'timeseries-timeseries_test-test101-dev']
+    # strategy:
+    #   matrix:
+    #     AG_PARAMS: ['tabular-small-1h8c-medium', 'timeseries-timeseries_test-test101-dev']
     defaults:
       run:
         shell: bash
@@ -72,13 +72,25 @@ jobs:
           role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmark
           role-duration-seconds: 14400
           aws-region: us-east-1
-      - name: Run benchmark
+      - name: Run benchmark - Timeseries
         shell: bash -l {0}
         run: |
           nvm install 20
           npm install -g aws-cdk
-          AG_MODULE=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f1)
-          AG_BENCHMARK=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f2)
-          AG_TIME_LIMIT=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f3)
-          AG_PRESET=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f4)
-          /bin/bash ./.github/workflow_scripts/run_benchmark.sh $AG_MODULE $AG_PRESET $AG_BENCHMARK $AG_TIME_LIMIT ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
+          /bin/bash ./.github/workflow_scripts/run_benchmark.sh timeseries dev timeseries_test test101 ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
+      - name: Run benchmark - Tabular
+        shell: bash -l {0}
+        run: |
+          nvm install 20
+          npm install -g aws-cdk
+          /bin/bash ./.github/workflow_scripts/run_benchmark.sh tabular medium small 1h8c ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
+      # - name: Run benchmark
+      #   shell: bash -l {0}
+      #   run: |
+      #     nvm install 20
+      #     npm install -g aws-cdk
+      #     AG_MODULE=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f1)
+      #     AG_BENCHMARK=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f2)
+      #     AG_TIME_LIMIT=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f3)
+      #     AG_PRESET=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f4)
+      #     /bin/bash ./.github/workflow_scripts/run_benchmark.sh $AG_MODULE $AG_PRESET $AG_BENCHMARK $AG_TIME_LIMIT ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
