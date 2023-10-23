@@ -17,6 +17,7 @@ on:
         required: true
         options:
           - tabular
+          - timeseries
       preset:
         description: 'Preset to run for tabular'
         required: true
@@ -25,12 +26,14 @@ on:
           - high
           - good
           - medium
+          - dev # for timeseries
       benchmark:
         description: 'Benchmark to run'
         required: true
         options:
           - full
           - test
+          - small
       time_limit:
         description: 'Time limit for the benchmark to run'
         required: true
@@ -40,6 +43,7 @@ on:
           - 8h
           - 16h
           - 24h
+          - test101
       branch_or_pr_number:
         description: 'Branch or PR number to run the benchmark on'
         required: true
@@ -75,6 +79,9 @@ jobs:
   generate_amlb_user_dir:
     needs: setup
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        AG_MODULE: [tabular, timeseries]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -86,9 +93,9 @@ jobs:
           role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmarkConfig
           role-duration-seconds: 3600
           aws-region: us-east-1
-      - name: Generate AMLB User Dir
+      - name: Generate AMLB User Dir - ${{ matrix.AG_MODULE }}
         run: |
-          /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ github.event.inputs.fork_name }} ${{ github.event.inputs.fork_branch }} ${{ github.sha }}
+          /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ matrix.AG_MODULE }} ${{ github.event.inputs.fork_name }} ${{ github.event.inputs.fork_branch }} ${{ github.sha }}
 
   benchmark:
     needs: generate_amlb_user_dir
