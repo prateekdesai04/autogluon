@@ -5,6 +5,7 @@ import subprocess
 import boto3
 import pandas as pd
 from io import BytesIO
+import tempfile
 import yaml
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
