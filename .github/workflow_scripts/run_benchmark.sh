@@ -29,10 +29,6 @@ then
     mv "./results/$master_cleaned_file" "./results/$new_master_cleaned_file"
 fi
 
-echo "Printing AG Bench Runs" 
-ls ./ag_bench_runs
-echo "Printing AG Bench Runs Module"
-ls ./ag_bench_runs/$MODULE
 python CI/bench/evaluate.py --config_path ./ag_bench_runs/$MODULE/ --module_name $MODULE --time_limit $TIME_LIMIT --branch_name $BRANCH_OR_PR_NUMBER
 
 for file in ./results/*; do
