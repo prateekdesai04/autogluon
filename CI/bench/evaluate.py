@@ -53,7 +53,7 @@ if module_name == 'timeseries':
     s3 = boto3.client('s3')
     response = s3.list_objects(Bucket=s3_bucket, Prefix=s3_folder)
     print("\nResponse Is: ", response)
-    csv_data = response['Body'].read().decode('utf-8')
+    # csv_data = response['Body'].read().decode('utf-8')
     if 'Contents' not in response:
         print(f"No files found in the folder {s3_folder}")
 
@@ -61,10 +61,12 @@ if module_name == 'timeseries':
     s3_object = response['Contents'][0]
     s3_object_key = s3_object['Key']
 
+    # Download the object to a temporary local file
+    temp_local_file = tempfile.NamedTemporaryFile(delete=False)
+    s3.download_file(s3_bucket, s3_object_key, temp_local_file.name)
+
     # Read the CSV from S3
-    response = s3.get_object(Bucket=s3_bucket, Key=s3_object_key)
-    csv_data = response['Body'].read().decode('utf-8')
-    df = pd.read_csv(StringIO(csv_data))
+    df = pd.read_csv(temp_local_file.name)
 
     # Check if "id" is a column in the DataFrame
     if "id" not in df.columns:
@@ -73,12 +75,10 @@ if module_name == 'timeseries':
     # Apply the replacement to the "id" column
     df["id"] = df["id"].str.replace('-', '/')
 
-    # Convert the DataFrame back to CSV
-    modified_csv_data = df.to_csv(index=False)
+    # Write the modified DataFrame back to the local file
+    df.to_csv(temp_local_file.name, index=False)
 
-    # Overwrite the original file in S3 with the modified data
-    s3.put_object(Bucket=s3_bucket, Key=s3_object_key, Body=modified_csv_data)
-
+    s3.upload_file(temp_local_file.name, s3_bucket, s3_object_key)
     print(f"CSV file at '{s3_object_key}' has been updated.")
 
 
