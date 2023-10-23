@@ -4,7 +4,7 @@ import subprocess
 
 import boto3
 import pandas as pd
-from io import StringIO
+from io import BytesIO
 import yaml
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -52,6 +52,7 @@ if module_name == 'timeseries':
     s3_folder = f"aggregated/{module_name}/{benchmark_name}/"
     s3 = boto3.client('s3')
     response = s3.list_objects(Bucket=s3_bucket, Prefix=s3_folder)
+    print("\nResponse Is: ", response)
     csv_data = response['Body'].read().decode('utf-8')
     if 'Contents' not in response:
         print(f"No files found in the folder {s3_folder}")
