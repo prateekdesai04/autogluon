@@ -49,38 +49,24 @@ subprocess.run(
 
 if module_name == 'timeseries':
 
+    s3 = boto3.resource('s3')
     s3_bucket = "autogluon-ci-benchmark"
     s3_folder = f"aggregated/{module_name}/{benchmark_name}/"
-    s3 = boto3.client('s3')
-    response = s3.list_objects(Bucket=s3_bucket, Prefix=s3_folder)
-    print("\nResponse Is: ", response)
-    # csv_data = response['Body'].read().decode('utf-8')
-    if 'Contents' not in response:
-        print(f"No files found in the folder {s3_folder}")
-
-    # Assuming there is only one file in the folder
-    s3_object = response['Contents'][0]
-    s3_object_key = s3_object['Key']
-
-    # Download the object to a temporary local file
-    temp_local_file = tempfile.NamedTemporaryFile(delete=False)
-    s3.download_file(s3_bucket, s3_object_key, temp_local_file.name)
-
-    # Read the CSV from S3
-    df = pd.read_csv(temp_local_file.name)
-
-    # Check if "id" is a column in the DataFrame
-    if "id" not in df.columns:
-        print('The "id" column does not exist in the CSV.')
-
-    # Apply the replacement to the "id" column
-    df["id"] = df["id"].str.replace('-', '/')
-
-    # Write the modified DataFrame back to the local file
-    df.to_csv(temp_local_file.name, index=False)
-
-    s3.upload_file(temp_local_file.name, s3_bucket, s3_object_key)
-    print(f"CSV file at '{s3_object_key}' has been updated.")
+    local_dir = './temp/'
+    bucket = s3.Bucket(s3_bucket)
+    for obj in bucket.objects.filter(Prefix=s3_folder):
+        target = obj.key if local_dir is None \
+            else os.path.join(local_dir, os.path.relpath(obj.key, s3_folder))
+        if not os.path.exists(os.path.dirname(target)):
+            os.makedirs(os.path.dirname(target))
+        if obj.key[-1] == '/':
+            continue
+        if obj.key.endswith('.csv'):
+            bucket.download_file(obj.key, target)
+            df = pd.read_csv(target)
+            df["id"] = df["id"].str.replace('_', '/')
+            df.to_csv(target, index=False)
+            bucket.upload_file(target, obj.key)
 
 
 subprocess.run(
