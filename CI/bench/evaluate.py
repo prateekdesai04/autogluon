@@ -47,26 +47,26 @@ subprocess.run(
     check=True,
 )
 
-if module_name == 'timeseries':
+# if module_name == 'timeseries':
 
-    s3 = boto3.resource('s3')
-    s3_bucket = "autogluon-ci-benchmark"
-    s3_folder = f"aggregated/{module_name}/{benchmark_name}/"
-    local_dir = './temp/'
-    bucket = s3.Bucket(s3_bucket)
-    for obj in bucket.objects.filter(Prefix=s3_folder):
-        target = obj.key if local_dir is None \
-            else os.path.join(local_dir, os.path.relpath(obj.key, s3_folder))
-        if not os.path.exists(os.path.dirname(target)):
-            os.makedirs(os.path.dirname(target))
-        if obj.key[-1] == '/':
-            continue
-        if obj.key.endswith('.csv'):
-            bucket.download_file(obj.key, target)
-            df = pd.read_csv(target)
-            df["id"] = df["id"].str.replace('_', '/')
-            df.to_csv(target, index=False)
-            bucket.upload_file(target, obj.key)
+#     s3 = boto3.resource('s3')
+#     s3_bucket = "autogluon-ci-benchmark"
+#     s3_folder = f"aggregated/{module_name}/{benchmark_name}/"
+#     local_dir = './temp/'
+#     bucket = s3.Bucket(s3_bucket)
+#     for obj in bucket.objects.filter(Prefix=s3_folder):
+#         target = obj.key if local_dir is None \
+#             else os.path.join(local_dir, os.path.relpath(obj.key, s3_folder))
+#         if not os.path.exists(os.path.dirname(target)):
+#             os.makedirs(os.path.dirname(target))
+#         if obj.key[-1] == '/':
+#             continue
+#         if obj.key.endswith('.csv'):
+#             bucket.download_file(obj.key, target)
+#             df = pd.read_csv(target)
+#             df["id"] = df["id"].str.replace('_', '/')
+#             df.to_csv(target, index=False)
+#             bucket.upload_file(target, obj.key)
 
 
 subprocess.run(
