@@ -2,7 +2,10 @@ import argparse
 import os
 import subprocess
 
+import boto3
 import pandas as pd
+from io import BytesIO
+import tempfile
 import yaml
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -10,18 +13,20 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument(
     "--config_path", help="path to generated config path to fetch benchmark name", type=str, required=True
 )
+parser.add_argument("--module_name", help="module on which we run benchmark", type=str, required=True)
 parser.add_argument("--time_limit", help="time limit of the benchmark run", type=str, required=True)
 parser.add_argument("--branch_name", help="if it happens to be master then just push the cleaned result, do not evaluate", type=str, required=True)
 
 args = parser.parse_args()
 
 config_path = args.config_path
+module_name = args.module_name
 time_limit = args.time_limit
 branch_name = args.branch_name
 
 for root, dirs, files in os.walk(config_path):
     for file in files:
-        if file == "tabular_cloud_configs.yaml":
+        if file == f"{module_name}_cloud_configs.yaml":
             config_file = os.path.join(root, file)
             break
 
@@ -34,20 +39,43 @@ subprocess.run(
         "agbench",
         "aggregate-amlb-results",
         "autogluon-ci-benchmark",
-        "tabular",
+        module_name,
         benchmark_name,
         "--constraint",
         time_limit,
     ],
     check=True,
 )
+
+# if module_name == 'timeseries':
+
+#     s3 = boto3.resource('s3')
+#     s3_bucket = "autogluon-ci-benchmark"
+#     s3_folder = f"aggregated/{module_name}/{benchmark_name}/"
+#     local_dir = './temp/'
+#     bucket = s3.Bucket(s3_bucket)
+#     for obj in bucket.objects.filter(Prefix=s3_folder):
+#         target = obj.key if local_dir is None \
+#             else os.path.join(local_dir, os.path.relpath(obj.key, s3_folder))
+#         if not os.path.exists(os.path.dirname(target)):
+#             os.makedirs(os.path.dirname(target))
+#         if obj.key[-1] == '/':
+#             continue
+#         if obj.key.endswith('.csv'):
+#             bucket.download_file(obj.key, target)
+#             df = pd.read_csv(target)
+#             df["id"] = df["id"].str.replace('_', '/')
+#             df.to_csv(target, index=False)
+#             bucket.upload_file(target, obj.key)
+
+
 subprocess.run(
     [
         "agbench",
         "clean-amlb-results",
         benchmark_name,
         f"--results-dir-input",
-        f"s3://autogluon-ci-benchmark/aggregated/tabular/{benchmark_name}/",
+        f"s3://autogluon-ci-benchmark/aggregated/{module_name}/{benchmark_name}/",
         "--benchmark-name-in-input-path",
         "--constraints",
         time_limit,

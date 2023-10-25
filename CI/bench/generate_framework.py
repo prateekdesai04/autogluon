@@ -8,13 +8,15 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 
 parser.add_argument("--repository", help="git repository to run autogluon on", type=str, required=True)
 parser.add_argument("--branch", help="git branch to run autogluon on", type=str, required=True)
+parser.add_argument("--module", help="module to run ag-bench on", type=str, required=True)
 
 args = parser.parse_args()
 
 
 repository = args.repository
 branch = args.branch
-framework_template_file = os.path.join(os.path.dirname(__file__), "amlb_user_dir", "frameworks_template.yaml")
+module = args.module
+framework_template_file = os.path.join(os.path.dirname(__file__), f"{module}/amlb_user_dir", "frameworks_template.yaml")
 framework_benchmark_file = os.path.join(os.path.dirname(framework_template_file), "frameworks_benchmark.yaml")
 
 frameworks = {}

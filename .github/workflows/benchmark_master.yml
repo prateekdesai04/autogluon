@@ -2,15 +2,12 @@
 name: Benchmark Master Branch
 on:
   push:
-    branches: ["master", "fold_fix"]
+    branches: ["master"]
   schedule:
     - cron: '00 09 * * SUN' #  UTC 9:00(2:00 PST Time) every Sunday
 
 env:
-  AG_MODULE: tabular
-  AG_PRESET: medium
-  AG_BENCHMARK: small
-  AG_TIME_LIMIT: 1h
+  # AG_PRESET: medium
   AG_BRANCH_NAME: master
   
 permissions:
@@ -20,6 +17,9 @@ permissions:
 jobs:
   generate_amlb_user_dir:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        AG_MODULE: [tabular, timeseries]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -31,12 +31,65 @@ jobs:
           role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmarkConfig
           role-duration-seconds: 3600
           aws-region: us-east-1
-      - name: Generate AMLB User Dir
+      - name: Generate AMLB User Dir - ${{ matrix.AG_MODULE }}
         run: |
-          /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ github.repository }} ${{ github.ref }} ${{ github.sha }}
+          /bin/bash CI/bench/generate_amlb_user_dir.sh ${{ matrix.AG_MODULE }} ${{ github.repository }} ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
       
-  benchmark:
+  benchmark-timeseries:
     needs: generate_amlb_user_dir
+    runs-on: ubuntu-latest
+    # strategy:
+    #   matrix:
+    #     AG_PARAMS: ['tabular-small-1h8c-medium', 'timeseries-timeseries_test-test101-dev']
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        # uses: jlumbroso/free-disk-space@v1.2.0
+        uses: hirnidrin/free-disk-space@main  # revert back once fix in https://github.com/jlumbroso/free-disk-space/pull/11
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+      - name: Checkout repository for PR
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.9'
+      - name: Setup npm
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'latest'
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmark
+          role-duration-seconds: 14400
+          aws-region: us-east-1
+      - name: Run benchmark - Timeseries
+        shell: bash -l {0}
+        run: |
+          nvm install 20
+          npm install -g aws-cdk
+          /bin/bash ./.github/workflow_scripts/run_benchmark.sh timeseries dev timeseries_test test101 ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
+      # - name: Run benchmark
+      #   shell: bash -l {0}
+      #   run: |
+      #     nvm install 20
+      #     npm install -g aws-cdk
+      #     AG_MODULE=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f1)
+      #     AG_BENCHMARK=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f2)
+      #     AG_TIME_LIMIT=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f3)
+      #     AG_PRESET=$(echo ${{ matrix.AG_PARAMS }} | cut -d'-' -f4)
+      #     /bin/bash ./.github/workflow_scripts/run_benchmark.sh $AG_MODULE $AG_PRESET $AG_BENCHMARK $AG_TIME_LIMIT ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
+  benchmark-tabular:
+    needs: [generate_amlb_user_dir, benchmark-timeseries]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -69,9 +122,9 @@ jobs:
           role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmark
           role-duration-seconds: 14400
           aws-region: us-east-1
-      - name: Run benchmark
+      - name: Run benchmark - Tabular
         shell: bash -l {0}
         run: |
           nvm install 20
           npm install -g aws-cdk
-          /bin/bash ./.github/workflow_scripts/run_benchmark.sh ${{ env.AG_MODULE }} ${{ env.AG_PRESET }} ${{ env.AG_BENCHMARK }} ${{ env.AG_TIME_LIMIT }} ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
+          /bin/bash ./.github/workflow_scripts/run_benchmark.sh tabular best small 1h8c ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
