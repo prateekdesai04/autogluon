@@ -18,8 +18,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmarkConfig
-          role-duration-seconds: 3600
+          role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmark
+          role-duration-seconds: 14400
           aws-region: us-east-1
       - name: Install AG Bench Using PyPi + Evaluate (change to source later)
         run: |
