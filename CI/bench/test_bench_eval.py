@@ -108,6 +108,8 @@ print(arr)
     
 paths = modified_list_paths
 frameworks = modified_list_frameworks
+print("\nPath is: ", modified_list_paths)
+print("\nFramework list is: ", modified_list_frameworks)
 subprocess.run(
     [
         "agbench",
