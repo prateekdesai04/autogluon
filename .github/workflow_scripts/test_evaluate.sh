@@ -6,12 +6,12 @@ MODULE=$1
 TIME_LIMIT=$2
 
 #pip install 
-pip install -U autogluon.bench
+# pip install -U autogluon.bench
 
 #source install
-# git clone -b test https://github.com/prateekdesai04/autogluon-bench.git
+git clone -b test https://github.com/prateekdesai04/autogluon-bench.git
 # git clone https://github.com/autogluon/autogluon-bench.git
-# pip install -e ./autogluon-bench
+pip install -e ./autogluon-bench
 
 #copy from s3
 aws s3 cp --recursive s3://autogluon-ci-benchmark/cleaned/tabular/master/latest/ ./results
