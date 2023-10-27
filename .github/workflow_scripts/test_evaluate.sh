@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -ex
+
+MODULE=$1
+TIME_LIMIT=$2
+
+#pip install 
+pip install -U autogluon.bench
+
+#source install
+# git clone -b test https://github.com/prateekdesai04/autogluon-bench.git
+# git clone https://github.com/autogluon/autogluon-bench.git
+# pip install -e ./autogluon-bench
+
+#run evaluation
+python CI/bench/test_bench_eval.py --config_path ./ag_bench_runs/$MODULE/ --module_name $MODULE --time_limit $TIME_LIMIT

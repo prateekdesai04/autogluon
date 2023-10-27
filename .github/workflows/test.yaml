@@ -1,0 +1,32 @@
+name: Test Eval Scripts
+on:
+  push:
+    branches: ["timeseries_bench"]
+  
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  download-from-s3: # do for tabular first
+    runs-on: ubuntu-latest
+    strategy:
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Setup Env Vars
+        uses: ./.github/actions/setup-env-vars
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::369469875935:role/AutoGluonCIBenchmarkConfig
+          role-duration-seconds: 3600
+          aws-region: us-east-1
+      - name: Command to download 2 cleaned tabular files
+        run: |
+          aws s3 cp --recursive s3://autogluon-ci-benchmark/cleaned/tabular/master/latest/ ./results
+          aws s3 cp --recursive s3://autogluon-ci-benchmark/cleaned/tabular/timeseries_dev/latest/ ./results
+      - name: Install AG Bench Using PyPi + Evaluate (change to source later)
+        run: |
+          #some bash script to install AG-bench in the repo and run the evaluation
+          /bin/bash ./.github/workflow_scripts/test_evaluate.sh tabular 1h
