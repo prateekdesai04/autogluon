@@ -10,7 +10,6 @@ permissions:
 jobs:
   download-from-s3: # do for tabular first
     runs-on: ubuntu-latest
-    strategy:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
