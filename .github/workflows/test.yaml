@@ -10,11 +10,20 @@ permissions:
 jobs:
   download-from-s3: # do for tabular first
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Setup Env Vars
-        uses: ./.github/actions/setup-env-vars
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.9'
+      - name: Setup npm
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'latest'
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
