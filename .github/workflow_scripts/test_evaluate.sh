@@ -5,6 +5,9 @@ set -ex
 MODULE=$1
 TIME_LIMIT=$2
 
+aws s3 cp --recursive s3://autogluon-ci-benchmark/cleaned/tabular/master/latest/ ./results
+aws s3 cp --recursive s3://autogluon-ci-benchmark/cleaned/tabular/timeseries_dev/latest/ ./results
+
 #pip install 
 pip install -U autogluon.bench
 
