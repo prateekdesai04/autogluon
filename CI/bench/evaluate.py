@@ -86,9 +86,6 @@ subprocess.run(
 
 # If it is a PR then perform the evaluation w.r.t cleaned master bench results
 if branch_name != "master":
-    print("\nListing Files in the directory!\n")
-    arr = os.listdir("./results/")
-    print(arr)
     paths = []
     frameworks = []
     for file in os.listdir("./results"):
@@ -108,6 +105,10 @@ if branch_name != "master":
     for framework in frameworks:
         modified_list_frameworks.append('--frameworks-run')
         modified_list_frameworks.append(framework)
+
+    print("\nListing Files in the directory!\n")
+    arr = os.listdir("./results/")
+    print(arr)
         
     paths = modified_list_paths
     frameworks = modified_list_frameworks
