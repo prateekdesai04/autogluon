@@ -9,7 +9,7 @@ TIME_LIMIT=$2
 # pip install -U autogluon.bench
 
 #source install
-git clone -b v0.4.0 https://github.com/autogluon/autogluon-bench.git
+git clone https://github.com/autogluon/autogluon-bench.git
 pip install -e ./autogluon-bench
 
 #copy from s3
