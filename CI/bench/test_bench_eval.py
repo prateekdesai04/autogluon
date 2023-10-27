@@ -110,8 +110,8 @@ paths = modified_list_paths
 frameworks = modified_list_frameworks
 print("\nPath is: ", modified_list_paths)
 print("\nFramework list is: ", modified_list_frameworks)
-subprocess.run(
-    [
+
+subprocess_cmd = [
         "agbench",
         "evaluate-amlb-results",
         *frameworks,
@@ -122,7 +122,13 @@ subprocess.run(
         f"./evaluate",
         "--no-clean-data",
     ]
-)
+
+cmd_string = " ".join(subprocess_cmd)
+
+print("Command to be executed: ")
+print(cmd_string)
+
+subprocess.run(subprocess_cmd)
 
 unique_framework = {}
 # Renaming the frameworks for dashboard formatting
