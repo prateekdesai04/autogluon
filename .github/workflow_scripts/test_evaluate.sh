@@ -13,7 +13,8 @@ git clone https://github.com/autogluon/autogluon-bench.git
 pip install -e ./autogluon-bench
 
 #copy from s3
-aws s3 cp --recursive s3://autogluon-ci-benchmark/cleaned/tabular/master/latest/ ./results
+# aws s3 cp --recursive s3://autogluon-ci-benchmark/cleaned/tabular/master/latest/ ./results
+aws s3 cp --recursive s3://autogluon-ci-benchmark/test-eval/ ./results
 aws s3 cp --recursive s3://autogluon-ci-benchmark/cleaned/tabular/timeseries_dev/latest/ ./results
 
 #run evaluation
