@@ -1,7 +1,7 @@
 name: Test Eval Scripts
 on:
   push:
-    branches: ["timeseries_bench"]
+    branches: ["master"]
   
 permissions:
   id-token: write
