@@ -116,7 +116,7 @@ subprocess_cmd = [
         "evaluate-amlb-results",
         *frameworks,
         "--results-dir-input",
-        "./results",
+        "./results/",
         *paths,
         f"--results-dir-output",
         f"./evaluate",
