@@ -5,9 +5,9 @@ REPOSITORY=$2
 BRANCH=$3
 SHORT_SHA=$4
 PR_NUMBER=$5
-#Parameter Called Module will come here which will pick the specific module to prepare user dir and will replace tabular
-#Move the generate framework up one directory
-#Master run will generate user_dir for both tabular and timeseries
+# Parameter Called Module will come here which will pick the specific module to prepare user dir and will replace tabular
+# Move the generate framework up one directory
+# Master run will generate user_dir for both tabular and timeseries
 
 # generate tabular configs
 python $(dirname "$0")/generate_framework.py --repository https://github.com/$REPOSITORY.git --branch $BRANCH --module $MODULE
