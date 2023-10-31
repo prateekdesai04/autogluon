@@ -19,7 +19,7 @@ function setup_build_contrib_env {
 
 function setup_benchmark_env {
     # pip install -U autogluon.bench
-    git clone -b test https://github.com/prateekdesai04/autogluon-bench.git
+    git clone https://github.com/autogluon/autogluon-bench.git
     #git clone -b v0.4.0 https://github.com/autogluon/autogluon-bench.git
     pip install -e ./autogluon-bench
     git clone https://github.com/autogluon/autogluon-dashboard.git

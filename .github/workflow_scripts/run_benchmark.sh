@@ -14,7 +14,7 @@ source $(dirname "$0")/env_setup.sh
 setup_benchmark_env
 
 /bin/bash CI/bench/generate_bench_config.sh $MODULE $PRESET $BENCHMARK $TIME_LIMIT $BRANCH_OR_PR_NUMBER
-agbench run $MODULE"_cloud_configs.yaml" --dev-branch https://github.com/prateekdesai04/autogluon-bench.git#test --wait
+agbench run $MODULE"_cloud_configs.yaml" --dev-branch https://github.com/autogluon/autogluon-bench.git#master --wait
 
 #Module will be used here AS WELL, instead of tabular everywhere it will change to the parameter
 #Master will run benchmark for both
