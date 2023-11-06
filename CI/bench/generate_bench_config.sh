@@ -13,7 +13,7 @@ MAX_MACHINE_NUM=200
 
 if [ $MODULE == "tabular" ] || [ $MODULE == "timeseries" ]; then
     FRAMEWORK=AutoGluon_$PRESET:benchmark
-    INSTANCE_TYPE=m5.2xlarge
+    INSTANCE_TYPE=m7i.2xlarge
     aws s3 cp --recursive s3://autogluon-ci-benchmark/configs/$MODULE/$USER_DIR_S3_PREFIX/latest/ $(dirname "$0")/amlb_user_dir/
     agbench generate-cloud-config \
     --prefix ag-bench-${INSTANCE_TYPE//./} \
