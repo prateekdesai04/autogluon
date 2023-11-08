@@ -7,7 +7,7 @@ on:
   #   - cron: '00 09 * * SUN' #  UTC 9:00(2:00 PST Time) every Sunday
 
 env:
-  AG_BRANCH_NAME: trial_runs
+  AG_BRANCH_NAME: full_benchmark
   
 permissions:
   id-token: write
