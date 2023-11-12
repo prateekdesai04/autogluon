@@ -20,7 +20,8 @@ function setup_build_contrib_env {
 function setup_benchmark_env {
     # pip install -U autogluon.bench - revert back when latest update in PyPi
     # git clone https://github.com/autogluon/autogluon-bench.git
-    git clone -b custom_metrics https://github.com/prateekdesai04/autogluon-bench.git
+    # git clone -b custom_metrics https://github.com/prateekdesai04/autogluon-bench.git
+    git clone -b fix_docker_copy https://github.com/suzhoum/autogluon-bench.git
     pip install -e ./autogluon-bench
     git clone https://github.com/autogluon/autogluon-dashboard.git
     pip install -e ./autogluon-dashboard
