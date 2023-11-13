@@ -45,6 +45,8 @@ for file in ./results/*; do
         BRANCH_NAME="master"
     else
         BRANCH_NAME=$BRANCH_OR_PR_NUMBER
+        aws s3 rm --recursive s3://autogluon-ci-benchmark/evaluation/$MODULE/$BRANCH_NAME/
+        aws s3 cp --recursive ./evaluate s3://autogluon-ci-benchmark/evaluation/$MODULE/$BRANCH_NAME/
     fi
 
     if [[ $MODULE == "multimodal" ]]; then
