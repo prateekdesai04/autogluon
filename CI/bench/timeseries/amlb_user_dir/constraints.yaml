@@ -2,6 +2,6 @@
 
 10m4c:
   folds: 3
-  max_runtime_seconds: 600
+  max_runtime_seconds: 30
   cores: 4
   min_vol_size_mb: 100000
