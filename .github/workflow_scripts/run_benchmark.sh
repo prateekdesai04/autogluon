@@ -66,8 +66,8 @@ for file in ./results/*; do
         aws s3 cp "$file" "s3://autogluon-ci-benchmark/cleaned/$MODULE/$BRANCH_OR_PR_NUMBER/$SHA/$(basename "$file")"
         aws s3 rm --recursive s3://autogluon-ci-benchmark/cleaned/$MODULE/$BRANCH_OR_PR_NUMBER/latest/
         aws s3 cp "$file" s3://autogluon-ci-benchmark/cleaned/$MODULE/$BRANCH_OR_PR_NUMBER/latest/$(basename "$file")
-        aws s3 rm --recursive s3://autogluon-ci-benchmark/evaluation/$MODULE/$BRANCH_NAME/
-        aws s3 cp --recursive ./evaluate s3://autogluon-ci-benchmark/evaluation/$MODULE/$BRANCH_NAME/
+        aws s3 rm --recursive s3://autogluon-ci-benchmark/evaluation/$MODULE/$BRANCH_OR_PR_NUMBER/
+        aws s3 cp --recursive ./evaluate s3://autogluon-ci-benchmark/evaluation/$MODULE/$BRANCH_OR_PR_NUMBER/
     elif [[ "$(basename "$file")" == "master"* ]] && [ $MODULE != "multimodal" ]; then
         aws s3 cp "$file" "s3://autogluon-ci-benchmark/cleaned/$MODULE/master/$SHA/$(basename "$file")"
         aws s3 rm --recursive s3://autogluon-ci-benchmark/cleaned/$MODULE/master/latest/
@@ -76,8 +76,8 @@ for file in ./results/*; do
         aws s3 cp "$file" "s3://autogluon-ci-benchmark/cleaned/$MODULE/$BENCHMARK/$BRANCH_OR_PR_NUMBER/$SHA/$(basename "$file")"
         aws s3 rm --recursive s3://autogluon-ci-benchmark/cleaned/$MODULE/$BENCHMARK/$BRANCH_OR_PR_NUMBER/latest/
         aws s3 cp "$file" s3://autogluon-ci-benchmark/cleaned/$MODULE/$BENCHMARK/$BRANCH_OR_PR_NUMBER/latest/$(basename "$file")
-        aws s3 rm --recursive s3://autogluon-ci-benchmark/evaluation/$MODULE/$BENCHMARK/$BRANCH_NAME/
-        aws s3 cp --recursive ./evaluate s3://autogluon-ci-benchmark/evaluation/$MODULE/$BENCHMARK/$BRANCH_NAME/
+        aws s3 rm --recursive s3://autogluon-ci-benchmark/evaluation/$MODULE/$BENCHMARK/$BRANCH_OR_PR_NUMBER/
+        aws s3 cp --recursive ./evaluate s3://autogluon-ci-benchmark/evaluation/$MODULE/$BENCHMARK/$BRANCH_OR_PR_NUMBER/
     elif [[ "$(basename "$file")" == "master"* ]] && [ $MODULE == "multimodal" ]; then
         aws s3 cp "$file" "s3://autogluon-ci-benchmark/cleaned/$MODULE/$BENCHMARK/master/$SHA/$(basename "$file")"
         aws s3 rm --recursive s3://autogluon-ci-benchmark/cleaned/$MODULE/$BENCHMARK/master/latest/
