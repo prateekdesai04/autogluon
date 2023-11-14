@@ -5,7 +5,6 @@ import yaml
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-
 parser.add_argument("--module", help="module to run ag-bench on", type=str, required=True)
 parser.add_argument("--repository", help="git repository to run autogluon on", type=str, required=True)
 parser.add_argument("--branch", help="git branch to run autogluon on", type=str, required=True)
