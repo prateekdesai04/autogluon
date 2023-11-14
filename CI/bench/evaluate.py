@@ -142,4 +142,4 @@ if branch_name != "master":
             pr_comment = f"\nBenchmark Test Result - Fail\nEvaluation Results Path: s3://autogluon-ci-benchmark/evaluation/{module_name}/{branch_name}\n"
 
     with open("final_eval.txt", "w") as file:
-        file.write(pr_comment)
+        file.write(pr_comment + os.linesep)
