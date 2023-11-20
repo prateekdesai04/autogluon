@@ -1,7 +1,9 @@
 name: Platform Tests
 on:
-  schedule:
-    - cron: '59 07 * * *'  #  UTC 7:59(23:59 PST Winter Time) everyday
+  # schedule:
+  #   - cron: '59 07 * * *'  #  UTC 7:59(23:59 PST Winter Time) everyday
+  push:
+    branches: ["master"]
   workflow_dispatch:
     inputs:
       repository:
