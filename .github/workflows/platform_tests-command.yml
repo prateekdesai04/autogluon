@@ -3,7 +3,7 @@ on:
   # schedule:
   #   - cron: '59 07 * * *'  #  UTC 7:59(23:59 PST Winter Time) everyday
   push:
-    branches: ["master"]
+    branches: ["platform-test"]
   workflow_dispatch:
     inputs:
       repository:
