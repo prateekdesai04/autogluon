@@ -68,8 +68,8 @@ class TimeSeriesPredictor:
 
         Probabilistic forecast metrics (evaluated on quantile forecasts for the specified ``quantile_levels``):
 
-        - ``"SQL"``: scaled quantile loss, defined as average of quantile losses divided by the in-sample seasonal error
-        - ``"WQL"``: mean weighted quantile loss, defined as average of quantile losses divided by the sum of absolute time series values in the forecast horizon
+        - ``"SQL"``: scaled quantile loss
+        - ``"WQL"``: weighted quantile loss
 
         Point forecast metrics (these are always evaluated on the ``"mean"`` column of the predictions):
 
@@ -82,7 +82,7 @@ class TimeSeriesPredictor:
         - ``"SMAPE"``: "symmetric" mean absolute percentage error
         - ``"WAPE"``: weighted absolute percentage error
 
-        For more information about these metrics, see https://auto.gluon.ai/stable/tutorials/timeseries/forecasting-metrics.html.
+        For more information about these metrics, see :ref:`Forecasting Time Series - Evaluation Metrics <forecasting_metrics>`.
     eval_metric_seasonal_period : int, optional
         Seasonal period used to compute some evaluation metrics such as mean absolute scaled error (MASE). Defaults to
         ``None``, in which case the seasonal period is computed based on the data frequency.
@@ -495,7 +495,7 @@ class TimeSeriesPredictor:
             * ``Theta`` with additive seasonal decomposition (all other parameters set to their defaults)
             * ``Theta`` with seasonality disabled (all other parameters set to their defaults)
 
-            Full list of available models and their hyperparameters is provided in :ref:`forecasting_zoo`.
+            Full list of available models and their hyperparameters is provided in :ref:`Forecasting Time Series - Model Zoo <forecasting_model_zoo>`.
 
             The hyperparameters for each model can be fixed values (as shown above), or search spaces over which
             hyperparameter optimization is performed. A search space should only be provided when
@@ -914,6 +914,7 @@ class TimeSeriesPredictor:
         """Returns a dictionary of objects each describing an attribute of the training process and trained models."""
         return self._learner.get_info(include_model_info=True)
 
+    @property
     def model_best(self) -> str:
         """Returns the name of the best model from trainer."""
         if self._trainer.model_best is not None:
@@ -1075,7 +1076,7 @@ class TimeSeriesPredictor:
             "\tModels trained in this way will have the suffix '_FULL' and have NaN validation score.\n"
             "\tThis process is not bound by time_limit, but should take less time than the original `fit` call."
         )
-        model_best = self.model_best()
+        model_best = self.model_best
         refit_full_dict = self._learner.refit_full(model=model)
 
         if set_best_to_refit_full:
@@ -1113,8 +1114,8 @@ class TimeSeriesPredictor:
 
     @Deprecated(min_version_to_warn="0.8.3", min_version_to_error="1.2", version_to_remove="1.2", new="model_best")
     def get_model_best(self) -> str:
-        return self.model_best()
+        return self.model_best
 
     @Deprecated(min_version_to_warn="0.8.3", min_version_to_error="1.2", version_to_remove="1.2", new="model_names")
-    def get_model_names(self) -> str:
+    def get_model_names(self) -> List[str]:
         return self.model_names()
