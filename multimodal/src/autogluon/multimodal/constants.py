@@ -1,7 +1,7 @@
 """Storing the constants"""
 from autogluon.core.metrics import METRICS
 
-# Test
+# Test - CI 
 # Column/Label Types
 NULL = "null"
 CATEGORICAL = "categorical"
