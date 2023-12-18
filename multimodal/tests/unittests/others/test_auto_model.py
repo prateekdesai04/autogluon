@@ -24,7 +24,7 @@ from autogluon.multimodal.models import HFAutoModelForTextPrediction, TimmAutoMo
 def test_hf_automodel_init(checkpoint_name):
     model = HFAutoModelForTextPrediction(prefix="model", checkpoint_name=checkpoint_name, num_classes=5)
 
-
+#test
 @pytest.mark.parametrize(
     "checkpoint_name",
     [
