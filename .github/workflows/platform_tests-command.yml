@@ -107,6 +107,10 @@ jobs:
          conda info
          echo "Listing Environment"
          conda list
+         echo "pip version"
+         pip --version
+         echo "pip3 version"
+         pip3 --version 
          chmod +x ./.github/workflow_scripts/test_core.sh && ./.github/workflow_scripts/test_core.sh
 
   features:
