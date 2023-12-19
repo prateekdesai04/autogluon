@@ -79,10 +79,11 @@ jobs:
          python --version
          echo "Python3 Version"
          python3 --version
-         alias python3="python"
+         PYTHON_VERSION=$(python --version | awk '{print $2}')
+         export PATH="/opt/hostedtoolcache/windows/python/${PYTHON_VERSION}/x64/bin:$PATH"
          echo "New Python3 Version"
          python3 --version
-        #  chmod +x ./.github/workflow_scripts/test_common.sh && ./.github/workflow_scripts/test_common.sh
+         chmod +x ./.github/workflow_scripts/test_common.sh && ./.github/workflow_scripts/test_common.sh
 
   # core:
   #   needs: setup
