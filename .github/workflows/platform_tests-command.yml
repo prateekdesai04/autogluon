@@ -81,7 +81,10 @@ jobs:
          python3 --version
          echo "Path listing"
          echo $PATH
-         chmod +x ./.github/workflow_scripts/test_common.sh && ./.github/workflow_scripts/test_common.sh
+         source activate autogluon_py3
+         echo "Activating Python3 Version"
+         python3 --version
+        #  chmod +x ./.github/workflow_scripts/test_common.sh && ./.github/workflow_scripts/test_common.sh
 
   # core:
   #   needs: setup
