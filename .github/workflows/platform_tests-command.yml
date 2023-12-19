@@ -83,7 +83,7 @@ jobs:
          echo $PATH
          conda activate autogluon_py3
          echo "Activating Python3 Version"
-         python3 --version
+         /c/Miniconda/envs/autogluon_py3/bin/python --version
         #  chmod +x ./.github/workflow_scripts/test_common.sh && ./.github/workflow_scripts/test_common.sh
 
   # core:
