@@ -80,7 +80,7 @@ jobs:
          echo "Python3 Version"
          python3 --version
          echo "Path listing"
-         echo $env:PATH
+         echo $PATH
          chmod +x ./.github/workflow_scripts/test_common.sh && ./.github/workflow_scripts/test_common.sh
 
   # core:
