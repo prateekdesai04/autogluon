@@ -81,9 +81,9 @@ jobs:
          python3 --version
          echo "Path listing"
          echo $PATH
-         conda activate autogluon_py3
+         export PATH="/c/Miniconda/envs/autogluon_py3/bin:$PATH"
          echo "Activating Python3 Version"
-         /c/Miniconda/envs/autogluon_py3/bin/python --version
+         python3 --version
         #  chmod +x ./.github/workflow_scripts/test_common.sh && ./.github/workflow_scripts/test_common.sh
 
   # core:
