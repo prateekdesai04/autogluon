@@ -62,7 +62,7 @@ jobs:
         if: (github.event_name == 'schedule')
         uses: actions/checkout@v2
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2.0.0
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: autogluon_py3
           environment-file: .github/workflows_env/unittest_env.yml
@@ -103,7 +103,15 @@ jobs:
       - name: unit-test
         shell: bash -l {0}
         run: |
-          chmod +x ./.github/workflow_scripts/test_core.sh && ./.github/workflow_scripts/test_core.sh
+         echo "Current Environment"
+         conda info
+         echo "Listing Environment"
+         conda list
+         echo "pip version"
+         pip --version
+         echo "pip3 version"
+         pip3 --version 
+         chmod +x ./.github/workflow_scripts/test_core.sh && ./.github/workflow_scripts/test_core.sh
 
   features:
     needs: setup
@@ -135,7 +143,11 @@ jobs:
       - name: unit-test
         shell: bash -l {0}
         run: |
-          chmod +x ./.github/workflow_scripts/test_features.sh && ./.github/workflow_scripts/test_features.sh
+         echo "Current Environment"
+         conda info
+         echo "Listing Environment"
+         conda list
+         chmod +x ./.github/workflow_scripts/test_features.sh && ./.github/workflow_scripts/test_features.sh
 
   # eda:
   #   needs: setup
@@ -208,8 +220,12 @@ jobs:
       - name: unit-test
         shell: bash -l {0}
         run: |
-          conda install --channel conda-forge pygraphviz
-          chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
+         conda install --channel conda-forge pygraphviz
+         echo "Current Environment"
+         conda info
+         echo "Listing Environment"
+         conda list
+         chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh "-m not gpu" "true"
 
   timeseries:
     needs: setup
@@ -250,8 +266,12 @@ jobs:
       - name: unit-test
         shell: bash -l {0}
         run: |
-          conda install --channel conda-forge pygraphviz
-          chmod +x ./.github/workflow_scripts/test_timeseries.sh && ./.github/workflow_scripts/test_timeseries.sh "-m not gpu" "true"
+         conda install --channel conda-forge pygraphviz
+         echo "Current Environment"
+         conda info
+         echo "Listing Environment"
+         conda list
+         chmod +x ./.github/workflow_scripts/test_timeseries.sh && ./.github/workflow_scripts/test_timeseries.sh "-m not gpu" "true"
 
   install:
     needs: setup
@@ -284,9 +304,17 @@ jobs:
         if: matrix.os != 'windows-latest'
         shell: bash -l {0}
         run: |
-          chmod +x ./.github/workflow_scripts/test_install.sh && ./.github/workflow_scripts/test_install.sh
+         echo "Current Environment"
+         conda info
+         echo "Listing Environment"
+         conda list
+         chmod +x ./.github/workflow_scripts/test_install.sh && ./.github/workflow_scripts/test_install.sh
       - name: unit-test on Windows
         if: matrix.os == 'windows-latest'
         shell: bash -l {0}
         run: |
-          chmod +x ./.github/workflow_scripts/test_install_windows.sh && ./.github/workflow_scripts/test_install_windows.sh
+         echo "Current Environment"
+         conda info
+         echo "Listing Environment"
+         conda list
+         chmod +x ./.github/workflow_scripts/test_install_windows.sh && ./.github/workflow_scripts/test_install_windows.sh
