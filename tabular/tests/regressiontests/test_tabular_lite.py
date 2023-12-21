@@ -2,6 +2,7 @@
     The test needs to be run via pyodide/tools/pytest_wrapper.py,
     and using conftest.py from pyodide root directory.
 """
+# Test
 from pathlib import Path
 
 import pytest
