@@ -28,7 +28,7 @@ fi
 cd tabular/
 if [ -n "$ADDITIONAL_TEST_ARGS" ]
 then
-    python -m pytest --junitxml=results.xml "$ADDITIONAL_TEST_ARGS" --durations=0 tests
+    python -m pytest --junitxml=results.xml --runslow "$ADDITIONAL_TEST_ARGS" --durations=0 tests
 else
-    python -m pytest --junitxml=results.xml --durations=0 tests
+    python -m pytest --junitxml=results.xml --runslow --durations=0 tests
 fi

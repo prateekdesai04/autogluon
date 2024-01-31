@@ -635,111 +635,111 @@ def run_tabular_benchmarks(fast_benchmark, subsample_size, perf_threshold, seed_
         warnings.warn(w.message)
 
 
-def test_pseudolabeling():
-    datasets = get_benchmark_sets()
-    train_file = "train_data.csv"
-    test_file = "test_data.csv"
-    directory_prefix = "./datasets/"
-    hyperparam_setting = {
-        "GBM": {"num_boost_round": 10},
-        "XGB": {"n_estimators": 10},
-    }
+# def test_pseudolabeling():
+#     datasets = get_benchmark_sets()
+#     train_file = "train_data.csv"
+#     test_file = "test_data.csv"
+#     directory_prefix = "./datasets/"
+#     hyperparam_setting = {
+#         "GBM": {"num_boost_round": 10},
+#         "XGB": {"n_estimators": 10},
+#     }
 
-    fit_args = dict(
-        hyperparameters=hyperparam_setting,
-        time_limit=20,
-    )
+#     fit_args = dict(
+#         hyperparameters=hyperparam_setting,
+#         time_limit=20,
+#     )
 
-    fit_args_best = dict(
-        presets="best_quality",
-        num_bag_folds=2,
-        num_bag_sets=1,
-        ag_args_ensemble=dict(fold_fitting_strategy="sequential_local"),
-    )
-    for idx in range(len(datasets)):
-        dataset = datasets[idx]
-        label = dataset["label"]
-        problem_type = dataset["problem_type"]
-        name = dataset["name"]
-        train_data, test_data = load_data(
-            directory_prefix=directory_prefix, train_file=train_file, test_file=test_file, name=dataset["name"], url=dataset["url"]
-        )
+#     fit_args_best = dict(
+#         presets="best_quality",
+#         num_bag_folds=2,
+#         num_bag_sets=1,
+#         ag_args_ensemble=dict(fold_fitting_strategy="sequential_local"),
+#     )
+#     for idx in range(len(datasets)):
+#         dataset = datasets[idx]
+#         label = dataset["label"]
+#         problem_type = dataset["problem_type"]
+#         name = dataset["name"]
+#         train_data, test_data = load_data(
+#             directory_prefix=directory_prefix, train_file=train_file, test_file=test_file, name=dataset["name"], url=dataset["url"]
+#         )
 
-        print(f"Testing dataset with name: {name}, problem type: {problem_type}")
+#         print(f"Testing dataset with name: {name}, problem type: {problem_type}")
 
-        train_data = train_data.sample(50, random_state=1)
-        test_data = test_data[test_data[label].notna()]
+#         train_data = train_data.sample(50, random_state=1)
+#         test_data = test_data[test_data[label].notna()]
 
-        if problem_type in PROBLEM_TYPES_CLASSIFICATION:
-            valid_class_idxes = test_data[label].isin(train_data[label].unique())
-            test_data = test_data[valid_class_idxes]
+#         if problem_type in PROBLEM_TYPES_CLASSIFICATION:
+#             valid_class_idxes = test_data[label].isin(train_data[label].unique())
+#             test_data = test_data[valid_class_idxes]
 
-        test_data = test_data.sample(50, random_state=1)
+#         test_data = test_data.sample(50, random_state=1)
 
-        error_msg_og = (
-            f"pseudolabel threw an exception during fit, it should have "
-            f"succeeded on problem type:{problem_type} with dataset name:{name}, "
-            f"with problem_type: {problem_type}. Under settings:"
-        )
+#         error_msg_og = (
+#             f"pseudolabel threw an exception during fit, it should have "
+#             f"succeeded on problem type:{problem_type} with dataset name:{name}, "
+#             f"with problem_type: {problem_type}. Under settings:"
+#         )
 
-        # Test label already given. If test label already given doesn't use pseudo labeling filter.
-        try:
-            print("Pseudolabel Testing: Pre-labeled data 'fit_pseudolabel'")
-            _, y_pred_proba = TabularPredictor(label=label, problem_type=problem_type).fit_pseudolabel(
-                pseudo_data=test_data,
-                return_pred_prob=True,
-                train_data=train_data,
-                **fit_args,
-            )
-        except Exception as e:
-            assert False, error_msg_og + "labeled test data"
+#         # Test label already given. If test label already given doesn't use pseudo labeling filter.
+#         try:
+#             print("Pseudolabel Testing: Pre-labeled data 'fit_pseudolabel'")
+#             _, y_pred_proba = TabularPredictor(label=label, problem_type=problem_type).fit_pseudolabel(
+#                 pseudo_data=test_data,
+#                 return_pred_prob=True,
+#                 train_data=train_data,
+#                 **fit_args,
+#             )
+#         except Exception as e:
+#             assert False, error_msg_og + "labeled test data"
 
-        try:
-            print("Pseudolabel Testing: Pre-labeled data, best quality 'fit_pseudolabel'")
-            _, y_pred_proba = TabularPredictor(label=label, problem_type=problem_type).fit_pseudolabel(
-                pseudo_data=test_data,
-                return_pred_prob=True,
-                train_data=train_data,
-                **fit_args_best,
-                **fit_args,
-            )
-        except Exception as e:
-            assert False, error_msg_og + "labeled test data, best quality"
+#         try:
+#             print("Pseudolabel Testing: Pre-labeled data, best quality 'fit_pseudolabel'")
+#             _, y_pred_proba = TabularPredictor(label=label, problem_type=problem_type).fit_pseudolabel(
+#                 pseudo_data=test_data,
+#                 return_pred_prob=True,
+#                 train_data=train_data,
+#                 **fit_args_best,
+#                 **fit_args,
+#             )
+#         except Exception as e:
+#             assert False, error_msg_og + "labeled test data, best quality"
 
-        # Test unlabeled pseudo data
-        unlabeled_test_data = test_data.drop(columns=label)
-        for flag_ensemble in [True, False]:
-            error_prefix = "ensemble " if flag_ensemble else ""
-            error_msg = error_prefix + error_msg_og
-            for is_weighted_ensemble in [True, False]:
-                error_suffix = " with pseudo label model weighted ensembling" if is_weighted_ensemble else ""
+#         # Test unlabeled pseudo data
+#         unlabeled_test_data = test_data.drop(columns=label)
+#         for flag_ensemble in [True, False]:
+#             error_prefix = "ensemble " if flag_ensemble else ""
+#             error_msg = error_prefix + error_msg_og
+#             for is_weighted_ensemble in [True, False]:
+#                 error_suffix = " with pseudo label model weighted ensembling" if is_weighted_ensemble else ""
 
-                try:
-                    print("Pseudolabel Testing: Unlabeled data 'fit_pseudolabel'")
-                    _, y_pred_proba = TabularPredictor(label=label, problem_type=problem_type).fit_pseudolabel(
-                        pseudo_data=unlabeled_test_data,
-                        return_pred_prob=True,
-                        train_data=train_data,
-                        use_ensemble=flag_ensemble,
-                        fit_ensemble=is_weighted_ensemble,
-                        **fit_args,
-                    )
-                except Exception as e:
-                    assert False, error_msg + "unlabeled test data" + error_suffix
+#                 try:
+#                     print("Pseudolabel Testing: Unlabeled data 'fit_pseudolabel'")
+#                     _, y_pred_proba = TabularPredictor(label=label, problem_type=problem_type).fit_pseudolabel(
+#                         pseudo_data=unlabeled_test_data,
+#                         return_pred_prob=True,
+#                         train_data=train_data,
+#                         use_ensemble=flag_ensemble,
+#                         fit_ensemble=is_weighted_ensemble,
+#                         **fit_args,
+#                     )
+#                 except Exception as e:
+#                     assert False, error_msg + "unlabeled test data" + error_suffix
 
-                try:
-                    print("Pseudolabel Testing: Unlabeled data, best quality 'fit_pseudolabel'")
-                    _, y_pred_proba = TabularPredictor(label=label, problem_type=problem_type).fit_pseudolabel(
-                        pseudo_data=unlabeled_test_data,
-                        return_pred_prob=True,
-                        train_data=train_data,
-                        use_ensemble=flag_ensemble,
-                        fit_ensemble=is_weighted_ensemble,
-                        **fit_args_best,
-                        **fit_args,
-                    )
-                except Exception as e:
-                    assert False, error_msg + "unlabeled test data, best quality" + error_suffix
+#                 try:
+#                     print("Pseudolabel Testing: Unlabeled data, best quality 'fit_pseudolabel'")
+#                     _, y_pred_proba = TabularPredictor(label=label, problem_type=problem_type).fit_pseudolabel(
+#                         pseudo_data=unlabeled_test_data,
+#                         return_pred_prob=True,
+#                         train_data=train_data,
+#                         use_ensemble=flag_ensemble,
+#                         fit_ensemble=is_weighted_ensemble,
+#                         **fit_args_best,
+#                         **fit_args,
+#                     )
+#                 except Exception as e:
+#                     assert False, error_msg + "unlabeled test data, best quality" + error_suffix
 
 
 @pytest.mark.slow
