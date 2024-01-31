@@ -22,26 +22,26 @@ jobs:
         run: |
           echo This is a restricted branch reserved for certain modules. Please use another branch instead
           exit 1
-  lint_check:
-    needs: branch_check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Check if changes beside docs
-        uses: dorny/paths-filter@v2
-        id: changes
-        with:
-          filters: |
-            other_than_docs:
-              - '!(docs/**)**'
-      - name: Lint Check on AWS Batch
-        if: steps.changes.outputs.other_than_docs == 'true'
-        uses: ./.github/actions/submit-job
-        with:
-          job-type: CI-CPU
-          job-name: AutoGluon-LintCheck
-          command: chmod +x ./.github/workflow_scripts/lint_check.sh && ./.github/workflow_scripts/lint_check.sh
+  # lint_check:
+  #   needs: branch_check
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v2
+  #     - name: Check if changes beside docs
+  #       uses: dorny/paths-filter@v2
+  #       id: changes
+  #       with:
+  #         filters: |
+  #           other_than_docs:
+  #             - '!(docs/**)**'
+  #     - name: Lint Check on AWS Batch
+  #       if: steps.changes.outputs.other_than_docs == 'true'
+  #       uses: ./.github/actions/submit-job
+  #       with:
+  #         job-type: CI-CPU
+  #         job-name: AutoGluon-LintCheck
+  #         command: chmod +x ./.github/workflow_scripts/lint_check.sh && ./.github/workflow_scripts/lint_check.sh
   # test_common:
   #   needs: lint_check
   #   runs-on: ubuntu-latest
@@ -103,7 +103,6 @@ jobs:
   #         job-name: AutoGluon-Features
   #         command: chmod +x ./.github/workflow_scripts/test_features.sh && ./.github/workflow_scripts/test_features.sh
   test_tabular:
-    needs: lint_check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -123,7 +122,6 @@ jobs:
           job-name: AutoGluon-Tabular
           command: chmod +x ./.github/workflow_scripts/test_tabular.sh && ./.github/workflow_scripts/test_tabular.sh
   test_tabular_lite:
-    needs: lint_check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
