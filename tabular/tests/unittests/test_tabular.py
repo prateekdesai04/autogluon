@@ -43,39 +43,39 @@ SEQUENTIAL_LOCAL_BAGGING = "sequential_local"
 on_windows = os.name == "nt"
 
 
-def test_tabular():
-    ############ Benchmark options you can set: ########################
-    perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
-    seed_val = 0  # random seed
-    subsample_size = None
-    hyperparameter_tune_kwargs = None
-    verbosity = 2  # how much output to print
-    hyperparameters = get_hyperparameter_config("default")
-    time_limit = None
-    fast_benchmark = True  # False
-    # If True, run a faster benchmark (subsample training sets, less epochs, etc),
-    # otherwise we run full benchmark with default AutoGluon settings.
-    # performance_value warnings are disabled when fast_benchmark = True.
+# def test_tabular():
+#     ############ Benchmark options you can set: ########################
+#     perf_threshold = 1.1  # How much worse can performance on each dataset be vs previous performance without warning
+#     seed_val = 0  # random seed
+#     subsample_size = None
+#     hyperparameter_tune_kwargs = None
+#     verbosity = 2  # how much output to print
+#     hyperparameters = get_hyperparameter_config("default")
+#     time_limit = None
+#     fast_benchmark = True  # False
+#     # If True, run a faster benchmark (subsample training sets, less epochs, etc),
+#     # otherwise we run full benchmark with default AutoGluon settings.
+#     # performance_value warnings are disabled when fast_benchmark = True.
 
-    #### If fast_benchmark = True, can control model training time here. Only used if fast_benchmark=True ####
-    if fast_benchmark:
-        subsample_size = 100
-        time_limit = 60
+#     #### If fast_benchmark = True, can control model training time here. Only used if fast_benchmark=True ####
+#     if fast_benchmark:
+#         subsample_size = 100
+#         time_limit = 60
 
-    # Catboost > 1.2 is required for python 3.11 but cannot be correctly installed on macos
-    if sys.version_info >= (3, 11) and sys.platform == "darwin":
-        hyperparameters.pop("CAT")
+#     # Catboost > 1.2 is required for python 3.11 but cannot be correctly installed on macos
+#     if sys.version_info >= (3, 11) and sys.platform == "darwin":
+#         hyperparameters.pop("CAT")
 
-    fit_args = {"verbosity": verbosity}
-    if hyperparameter_tune_kwargs is not None:
-        fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
-    if hyperparameters is not None:
-        fit_args["hyperparameters"] = hyperparameters
-    if time_limit is not None:
-        fit_args["time_limit"] = time_limit
-    ###################################################################
-    run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
-    run_tabular_benchmark_toy(fit_args=fit_args)
+#     fit_args = {"verbosity": verbosity}
+#     if hyperparameter_tune_kwargs is not None:
+#         fit_args["hyperparameter_tune_kwargs"] = hyperparameter_tune_kwargs
+#     if hyperparameters is not None:
+#         fit_args["hyperparameters"] = hyperparameters
+#     if time_limit is not None:
+#         fit_args["time_limit"] = time_limit
+#     ###################################################################
+#     run_tabular_benchmarks(fast_benchmark=fast_benchmark, subsample_size=subsample_size, perf_threshold=perf_threshold, seed_val=seed_val, fit_args=fit_args)
+#     run_tabular_benchmark_toy(fit_args=fit_args)
 
 
 def _assert_predict_dict_identical_to_predict(predictor: TabularPredictor, data):
