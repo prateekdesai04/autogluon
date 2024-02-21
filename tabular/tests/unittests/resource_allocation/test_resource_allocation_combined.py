@@ -3,6 +3,7 @@ import time
 import numpy as np
 import pandas as pd
 import pytest
+import ray
 
 from autogluon.core.hpo.executors import CustomHpoExecutor, RayHpoExecutor
 from autogluon.core.models.ensemble.bagged_ensemble_model import BaggedEnsembleModel
@@ -1007,3 +1008,6 @@ def test_resource_allocation_combined_valid(mock_system_resources_ctx_mgr, test_
             _test_functionality(mock_system_resources_ctx_mgr=mock_system_resources_ctx_mgr, test_args=test_args)
     else:
         _test_functionality(mock_system_resources_ctx_mgr=mock_system_resources_ctx_mgr, test_args=test_args)
+    
+    ray.shutdown()
+
