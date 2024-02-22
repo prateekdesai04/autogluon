@@ -123,9 +123,7 @@ def test_hpo_and_bagging_valid_resources_per_fold_and_no_resources_per_trial(moc
     with mock_system_resources_ctx_mgr(num_cpus=total_resources["num_cpus"], num_gpus=total_resources["num_gpus"]):
         base_model = DummyModel(minimum_resources={"num_cpus": 1, "num_gpus": 0.01}, hyperparameters={"ag_args_fit": {"num_cpus": 1, "num_gpus": 0.1}})
         base_model.initialize()
-        bagged_model = DummyBaggedModel(
-            model_base=base_model,
-        )
+        bagged_model = DummyBaggedModel(model_base=base_model)
         bagged_model.initialize()
         executor.register_resources(bagged_model, k_fold=8, X=dummy_x, **total_resources)
         # 1 bag in parallel, 8 folds in parallel per bagged ensemble, each using 1 cpu and 0.1 gpus
@@ -139,9 +137,7 @@ def test_hpo_and_bagging_valid_resources_per_trial_and_no_resources_per_fold(moc
     executor = _initialize_executor(executor_cls, hyperparameter_tune_kwargs)
     total_resources = {"num_cpus": 8, "num_gpus": 1}
     with mock_system_resources_ctx_mgr(num_cpus=total_resources["num_cpus"], num_gpus=total_resources["num_gpus"]):
-        base_model = DummyModel(
-            minimum_resources={"num_cpus": 1, "num_gpus": 0.1},
-        )
+        base_model = DummyModel(minimum_resources={"num_cpus": 1, "num_gpus": 0.1})
         base_model.initialize()
         bagged_model = DummyBaggedModel(model_base=base_model, hyperparameters={"ag_args_fit": {"num_cpus": 1, "num_gpus": 0.1}})
         bagged_model.initialize()
@@ -157,9 +153,7 @@ def test_hpo_and_bagging_no_resources_per_trial_and_no_resources_per_fold(mock_s
     executor = _initialize_executor(executor_cls, hyperparameter_tune_kwargs)
     total_resources = {"num_cpus": 8, "num_gpus": 1}
     with mock_system_resources_ctx_mgr(num_cpus=total_resources["num_cpus"], num_gpus=total_resources["num_gpus"]):
-        base_model = DummyModel(
-            minimum_resources={"num_cpus": 1, "num_gpus": 0.5},
-        )
+        base_model = DummyModel(minimum_resources={"num_cpus": 1, "num_gpus": 0.5})
         base_model.initialize()
         bagged_model = DummyBaggedModel(model_base=base_model, hyperparameters={})
         bagged_model.initialize()
@@ -215,9 +209,7 @@ def test_hpo_without_bagging_no_resources_per_trial(mock_system_resources_ctx_mg
     total_resources = {"num_cpus": 8, "num_gpus": 1}
     with mock_system_resources_ctx_mgr(num_cpus=total_resources["num_cpus"], num_gpus=total_resources["num_gpus"]):
         # Test valid resources per fold and resources per trial
-        model = DummyModel(
-            minimum_resources={"num_cpus": 1, "num_gpus": 0.1},
-        )
+        model = DummyModel(minimum_resources={"num_cpus": 1, "num_gpus": 0.1})
         model.initialize()
         executor.register_resources(model, X=dummy_x, **total_resources)
         if executor_cls == RayHpoExecutor:

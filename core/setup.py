@@ -47,11 +47,11 @@ install_requires = (
 
 extras_require = {
     "ray": [
-        "ray[default]>=2.6.3,<2.7",
+        "ray[default]>=2.8.0,<2.9.1",
         "async-timeout",
     ],
     "raytune": [
-        "ray[default,tune]>=2.6.3,<2.7",
+        "ray[default,tune]>=2.8.0,<2.9.1",
         # TODO: consider alternatives as hyperopt is not actively maintained.
         "hyperopt>=0.2.7,<0.2.8",  # This is needed for the bayes search to work.
         # 'GPy>=1.10.0,<1.11.0'  # TODO: Enable this once PBT/PB2 are supported by ray lightning

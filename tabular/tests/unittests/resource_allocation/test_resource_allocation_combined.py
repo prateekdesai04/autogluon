@@ -7,10 +7,7 @@ import ray
 
 from autogluon.core.hpo.executors import CustomHpoExecutor, RayHpoExecutor
 from autogluon.core.models.ensemble.bagged_ensemble_model import BaggedEnsembleModel
-from autogluon.core.models.ensemble.fold_fitting_strategy import (
-    ParallelLocalFoldFittingStrategy,
-    SequentialLocalFoldFittingStrategy,
-)
+from autogluon.core.models.ensemble.fold_fitting_strategy import ParallelLocalFoldFittingStrategy, SequentialLocalFoldFittingStrategy
 from autogluon.tabular.models import AbstractModel
 
 
@@ -82,15 +79,7 @@ def _construct_dummy_fold_strategy(fold_strategy_cls, num_jobs, num_folds_parall
     return fold_strategy_cls(**args)
 
 
-def _test_bagging(
-    fold_strategy_cls,
-    num_jobs,
-    num_folds_parallel,
-    model_base,
-    bagged_model,
-    resources,
-    expected_answer,
-):
+def _test_bagging(fold_strategy_cls, num_jobs, num_folds_parallel, model_base, bagged_model, resources, expected_answer):
     fold_fitting_strategy = _construct_dummy_fold_strategy(
         fold_strategy_cls=fold_strategy_cls,
         num_jobs=num_jobs,
@@ -287,9 +276,7 @@ tests_dict = {
             "ag_args_fit": {"num_cpus": 2, "num_gpus": 0.5},
             "num_bag_folds": 8,
             "fold_strategy_cls": SequentialLocalFoldFittingStrategy,
-            "expected_answer": {
-                "resources_per_model": {"num_cpus": 2, "num_gpus": 0.5},
-            },
+            "expected_answer": {"resources_per_model": {"num_cpus": 2, "num_gpus": 0.5}},
         }
     ),
     "sequential_bagging_with_valid_ag_args_ensemble_and_ag_args_fit": (
@@ -299,9 +286,7 @@ tests_dict = {
             "ag_args_fit": {"num_cpus": 2, "num_gpus": 1},
             "num_bag_folds": 8,
             "fold_strategy_cls": SequentialLocalFoldFittingStrategy,
-            "expected_answer": {
-                "resources_per_model": {"num_cpus": 2, "num_gpus": 1},
-            },
+            "expected_answer": {"resources_per_model": {"num_cpus": 2, "num_gpus": 1}},
         }
     ),
     "sequential_bagging_with_valid_ag_args_ensemble": (
@@ -310,9 +295,7 @@ tests_dict = {
             "ag_args_ensemble": {"num_cpus": 2, "num_gpus": 1},
             "num_bag_folds": 8,
             "fold_strategy_cls": SequentialLocalFoldFittingStrategy,
-            "expected_answer": {
-                "resources_per_model": {"num_cpus": 2, "num_gpus": 1},
-            },
+            "expected_answer": {"resources_per_model": {"num_cpus": 2, "num_gpus": 1}},
         }
     ),
     "sequential_bagging_with_valid_ag_args_fit_and_ag_args_ensemble": (
@@ -321,9 +304,7 @@ tests_dict = {
             "ag_args_fit": {"num_cpus": 2, "num_gpus": 1},
             "num_bag_folds": 8,
             "fold_strategy_cls": SequentialLocalFoldFittingStrategy,
-            "expected_answer": {
-                "resources_per_model": {"num_cpus": 2, "num_gpus": 1},
-            },
+            "expected_answer": {"resources_per_model": {"num_cpus": 2, "num_gpus": 1}},
         }
     ),
     "sequential_bagging_without_anything": (
@@ -333,9 +314,7 @@ tests_dict = {
             "model_default_resources": {"num_cpus": 2, "num_gpus": 1},
             "num_bag_folds": 8,
             "fold_strategy_cls": SequentialLocalFoldFittingStrategy,
-            "expected_answer": {
-                "resources_per_model": {"num_cpus": 2, "num_gpus": 1},
-            },
+            "expected_answer": {"resources_per_model": {"num_cpus": 2, "num_gpus": 1}},
         }
     ),
     "hpo_with_total_resources_and_ag_args_ensemble_ag_args_fit": (
@@ -610,10 +589,7 @@ tests_dict = {
             "num_trials": 2,
             "num_bag_folds": 4,
             "fold_strategy_cls": SequentialLocalFoldFittingStrategy,
-            "expected_answer": {
-                "resources_per_trial": {"num_cpus": 4, "num_gpus": 1},
-                "resources_per_model": {"num_cpus": 2, "num_gpus": 0.5},
-            },
+            "expected_answer": {"resources_per_trial": {"num_cpus": 4, "num_gpus": 1}, "resources_per_model": {"num_cpus": 2, "num_gpus": 0.5}},
         }
     ),
     "hpo_and_sequential_bagging_with_total_resources_and_ag_args_ensemble": (
@@ -625,10 +601,7 @@ tests_dict = {
             "num_trials": 2,
             "num_bag_folds": 4,
             "fold_strategy_cls": SequentialLocalFoldFittingStrategy,
-            "expected_answer": {
-                "resources_per_trial": {"num_cpus": 4, "num_gpus": 1},
-                "resources_per_model": {"num_cpus": 4, "num_gpus": 1},
-            },
+            "expected_answer": {"resources_per_trial": {"num_cpus": 4, "num_gpus": 1}, "resources_per_model": {"num_cpus": 4, "num_gpus": 1}},
         }
     ),
     "hpo_and_sequential_bagging_with_total_resources_and_ag_args_fit": (
@@ -742,10 +715,7 @@ tests_dict = {
             "executor_cls": CustomHpoExecutor,
             "num_bag_folds": 4,
             "fold_strategy_cls": SequentialLocalFoldFittingStrategy,
-            "expected_answer": {
-                "resources_per_trial": {"num_cpus": 4, "num_gpus": 1},
-                "resources_per_model": {"num_cpus": 2, "num_gpus": 0.5},
-            },
+            "expected_answer": {"resources_per_trial": {"num_cpus": 4, "num_gpus": 1}, "resources_per_model": {"num_cpus": 2, "num_gpus": 0.5}},
         }
     ),
     "custom_hpo_and_sequential_bagging_with_total_resources_and_ag_args_ensemble": (
@@ -758,10 +728,7 @@ tests_dict = {
             "executor_cls": CustomHpoExecutor,
             "num_bag_folds": 4,
             "fold_strategy_cls": SequentialLocalFoldFittingStrategy,
-            "expected_answer": {
-                "resources_per_trial": {"num_cpus": 4, "num_gpus": 1},
-                "resources_per_model": {"num_cpus": 4, "num_gpus": 1},
-            },
+            "expected_answer": {"resources_per_trial": {"num_cpus": 4, "num_gpus": 1}, "resources_per_model": {"num_cpus": 4, "num_gpus": 1}},
         }
     ),
     "custom_hpo_and_sequential_bagging_with_total_resources_and_ag_args_fit": (
@@ -1008,6 +975,5 @@ def test_resource_allocation_combined_valid(mock_system_resources_ctx_mgr, test_
             _test_functionality(mock_system_resources_ctx_mgr=mock_system_resources_ctx_mgr, test_args=test_args)
     else:
         _test_functionality(mock_system_resources_ctx_mgr=mock_system_resources_ctx_mgr, test_args=test_args)
-    
-    ray.shutdown()
 
+    ray.shutdown()

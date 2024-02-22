@@ -5,10 +5,7 @@ import pandas as pd
 import pytest
 
 from autogluon.core.models.ensemble.bagged_ensemble_model import BaggedEnsembleModel
-from autogluon.core.models.ensemble.fold_fitting_strategy import (
-    ParallelLocalFoldFittingStrategy,
-    SequentialLocalFoldFittingStrategy,
-)
+from autogluon.core.models.ensemble.fold_fitting_strategy import ParallelLocalFoldFittingStrategy, SequentialLocalFoldFittingStrategy
 from autogluon.tabular.models import AbstractModel
 
 
