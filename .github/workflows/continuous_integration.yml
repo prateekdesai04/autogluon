@@ -87,7 +87,7 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT }}
         run: |
           pr_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          comment_body=$(jq -n --arg body "`cat ./diff_output.txt`" '{body: $body}')
+          comment_body=$(jq -n --arg body "`cat ./table_output.txt`" '{body: $body}')
           curl -X POST \
             -H "Authorization: token $GH_TOKEN" \
             -H "Content-Type: application/json" \
