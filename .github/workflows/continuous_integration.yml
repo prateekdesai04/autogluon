@@ -83,12 +83,12 @@ jobs:
           /bin/bash ./.github/workflow_scripts/version_diff.sh
       - name: Update pull request with diff
         env:
-          token: ${{ secrets.PAT }}
+          GH_TOKEN: ${{ secrets.PAT }}
         run: |
           pr_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          comment_body=$(cat ./diff_output.txt)
+          comment_body=$(cat ./diff_output.txt | jq -sRr @json)
           curl -X POST \
-            -H "Authorization: token $token" \
+            -H "Authorization: token $GH_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"body\": \"$comment_body\"}" \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${pr_number}/comments"
