@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List files in the specified S3 bucket and folder
-files=$(aws s3 ls s3://autogluon-ci/package_versions/)
+files=$(aws s3 ls s3://autogluon-ci/test/)
 
 # Extract the filenames with the pattern package_versions_{datetimestamp}.txt
 latest_file=""
@@ -23,7 +23,7 @@ while read -r line; do
     fi
 done <<< "$files"
 
-aws s3 cp s3://autogluon-ci/package_versions/$latest_file ./
+aws s3 cp s3://autogluon-ci/test/$latest_file ./
 old_latest_file="old_${latest_file}"
 mv "./$latest_file" "./$old_latest_file"
 
