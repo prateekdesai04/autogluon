@@ -34,7 +34,17 @@ if [ $diff_exit_code -eq 0 ]; then
     echo "No difference"
 elif [ $diff_exit_code -eq 1 ]; then
     echo "\nPackage Differences Below:\n"
-    cat ./diff_output.txt
+    echo "| Previous | Current |" > table_output.txt
+    echo "| --- | --- |" >> table_output.txt
+    while IFS= read -r line; do
+        if [[ $line == \<* ]]; then
+            current=$line
+        elif [[ $line == \>* ]]; then
+            prev=$line
+            echo "| $prev | $current |" >> table_output.txt
+        fi
+    done < ./diff_output.txt
+    cat ./table_output.txt
 else
     echo "Error: diff command failed with exit code $diff_exit_code"
     exit 1
