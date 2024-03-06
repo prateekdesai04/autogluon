@@ -70,7 +70,7 @@ jobs:
       - name: Install all dependencies
         shell: bash -l {0}
         run: |
-          chmod +x ./full_install.sh && ./full_install.sh
+          chmod +x ./.github/workflow_scripts/test_common.sh && ./.github/workflow_scripts/test_common.sh
       - name: Store package versions
         shell: bash -l {0}
         run: |
