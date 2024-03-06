@@ -48,9 +48,9 @@ elif [ $diff_exit_code -eq 1 ]; then
     echo "| --- | --- |" >> table_output.txt
     while IFS=$'\n' read -r line; do
         if [[ $line == \<* ]]; then
-            current=$(printf '%-10s' "$line" | fold -w 70 | awk 1 ORS='&#8203;')
+            current=$(printf '%-10s' "$line" | fold -w 10 | awk 1 ORS='&#8203;')
         elif [[ $line == \>* ]]; then
-            prev=$(printf '%-10s' "$line" | fold -w 70 | awk 1 ORS='&#8203;')
+            prev=$(printf '%-10s' "$line" | fold -w 10 | awk 1 ORS='&#8203;')
             echo "| <pre>$prev</pre> | <pre>$current</pre> |" >> table_output.txt
         fi
     done < ./diff_output.txt
