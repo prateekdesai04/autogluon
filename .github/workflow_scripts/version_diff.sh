@@ -36,12 +36,12 @@ elif [ $diff_exit_code -eq 1 ]; then
     echo "\nPackage Differences Below:\n"
     echo "| Previous | Current |" > table_output.txt
     echo "| --- | --- |" >> table_output.txt
-    while IFS= read -r line; do
+    while IFS=$'\n' read -r line; do
         if [[ $line == \<* ]]; then
-            current=$line
+            current=$(printf '%-70s' "$line" | fold -w 70 | paste -s -d '<br>')
         elif [[ $line == \>* ]]; then
-            prev=$line
-            echo "| $prev | $current |" >> table_output.txt
+            prev=$(printf '%-70s' "$line" | fold -w 70 | paste -s -d '<br>')
+            echo "| <pre>$prev</pre> | <pre>$current</pre> |" >> table_output.txt
         fi
     done < ./diff_output.txt
     cat ./table_output.txt
