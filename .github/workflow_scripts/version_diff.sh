@@ -57,8 +57,8 @@ elif [ $diff_exit_code -eq 1 ]; then
         fi
     done < ./diff_output.txt
 
-    # Create table - test
-    echo "| Previous | Current |" > table_output.txt
+    # Create table
+    echo "| Previous CI Run | Current CI Run |" > table_output.txt
     echo "| :---: | :---: |" >> table_output.txt
     for key in "${!prev_packages[@]}" "${!curr_packages[@]}"; do
         prev="${key}=${prev_packages[$key]}"
