@@ -39,6 +39,7 @@ elif [ $diff_exit_code -eq 1 ]; then
     declare -A curr_packages
 
     while IFS= read -r line; do
+
         if [[ $line == *"-e git+https:"* ]] && [[ $line == *"autogluon"* ]] || ! [[ $line =~ ^[\<\>] ]] || [[ $line == *"Timestamp:"* ]] ; then
             continue
         fi
@@ -57,7 +58,7 @@ elif [ $diff_exit_code -eq 1 ]; then
     done < ./diff_output.txt
     
     # Create table
-    echo "| Previous | Current |" > table_output.txt
+    echo "| Previous CI Run | Current CI Run |" > table_output.txt
     echo "| :---: | :---: |" >> table_output.txt
     for key in "${!prev_packages[@]}" "${!curr_packages[@]}"; do
         prev="${key}=${prev_packages[$key]}"
@@ -70,7 +71,7 @@ elif [ $diff_exit_code -eq 1 ]; then
         fi
         echo "| $prev | $curr |" >> table_output.txt
     done
-
+    
     cat ./diff_output.txt
 else
     echo "Error: diff command failed with exit code $diff_exit_code"
