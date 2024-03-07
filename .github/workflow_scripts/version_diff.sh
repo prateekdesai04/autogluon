@@ -59,7 +59,7 @@ elif [ $diff_exit_code -eq 1 ]; then
 
     # Create table
     echo "| Previous | Current |" > table_output.txt
-    echo "| --- | --- |" >> table_output.txt
+    echo "| :---: | :---: |" >> table_output.txt
     for key in "${!prev_packages[@]}" "${!curr_packages[@]}"; do
         prev="< ${key}=${prev_packages[$key]}"
         curr="< ${key}=${curr_packages[$key]}"
