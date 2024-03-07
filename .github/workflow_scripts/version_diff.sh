@@ -37,6 +37,9 @@ elif [ $diff_exit_code -eq 1 ]; then
     echo "| Previous | Current |" > table_output.txt
     echo "| --- | --- |" >> table_output.txt
     while IFS= read -r line; do
+        if [[ $line == *"-e git+https:"* ]] && [[ $line == *"autogluon"* ]]; then
+        continue
+        fi
         if [[ $line == \<* ]]; then
             prev=$line
         elif [[ $line == \>* ]]; then
