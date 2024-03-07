@@ -35,15 +35,15 @@ if [ $diff_exit_code -eq 0 ]; then
 elif [ $diff_exit_code -eq 1 ]; then
     echo "\nPackage Differences Below:\n"
     echo "| Previous | Current |" > table_output.txt
-    echo "| --- | --- |" >> table_output.txt
+    echo "| :---: | :---: |" >> table_output.txt
     while IFS= read -r line; do
         if [[ $line == *"-e git+https:"* ]] && [[ $line == *"autogluon"* ]]; then
-        continue
+            continue
         fi
         if [[ $line == \<* ]]; then
-            prev=$line
-        elif [[ $line == \>* ]]; then
             current=$line
+        elif [[ $line == \>* ]]; then
+            prev=$line
             echo "| $prev | $current |" >> table_output.txt
         fi
     done < ./diff_output.txt
