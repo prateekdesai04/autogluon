@@ -47,13 +47,13 @@ elif [ $diff_exit_code -eq 1 ]; then
         if [[ $line == \<* ]]; then
             name=$(echo "$line" | cut -d= -f1 | cut -d' ' -f2)
             version=$(echo "$line" | cut -d= -f2-)
-            prev_packages[$name]=$version
+            curr_packages[$name]=$version
         fi
         # Process current packages
         if [[ $line == \>* ]]; then
             name=$(echo "$line" | cut -d= -f1 | cut -d' ' -f2)
             version=$(echo "$line" | cut -d= -f2-)
-            curr_packages[$name]=$version
+            prev_packages[$name]=$version
         fi
     done < ./diff_output.txt
 
@@ -61,8 +61,8 @@ elif [ $diff_exit_code -eq 1 ]; then
     echo "| Previous | Current |" > table_output.txt
     echo "| --- | --- |" >> table_output.txt
     for key in "${!prev_packages[@]}" "${!curr_packages[@]}"; do
-        prev="< ${key}=${prev_packages[$key]}"
-        curr="< ${key}=${curr_packages[$key]}"
+        prev="${key}=${prev_packages[$key]}"
+        curr="${key}=${curr_packages[$key]}"
         if [[ -z ${prev_packages[$key]} ]]; then
         prev="-"
         fi
