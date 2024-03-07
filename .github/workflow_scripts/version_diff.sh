@@ -44,17 +44,17 @@ elif [ $diff_exit_code -eq 1 ]; then
     #         echo "| <pre>$prev</pre> | <pre>$current</pre> |" >> table_output.txt
     #     fi
     # done < ./diff_output.txt
-    echo "| Previous | Current |" > table_output.txt
-    echo "| --- | --- |" >> table_output.txt
+    echo "<style>table { table-layout: fixed; } th, td { word-wrap: break-word; }</style>" > table_output.html
+    echo "<table><tr><th>Previous</th><th>Current</th></tr>" >> table_output.html
     while IFS=$'\n' read -r line; do
         if [[ $line == \<* ]]; then
-            current=$(printf '%-40s' "$line" | fold -w 40 | paste -s -d '<br>')
+            current=$(printf '%s' "$line" | fold -w 70 | paste -s -d '<br>')
         elif [[ $line == \>* ]]; then
-            prev=$(printf '%-40s' "$line" | fold -w 40 | paste -s -d '<br>')
-            echo "| <pre>$prev</pre> | <pre>$current</pre> |" >> table_output.txt
+            prev=$(printf '%s' "$line" | fold -w 70 | paste -s -d '<br>')
+            echo "<tr><td><pre>$prev</pre></td><td><pre>$current</pre></td></tr>" >> table_output.html
         fi
     done < ./diff_output.txt
-    echo "test"
+    echo "</table>" >> table_output.html
     cat ./table_output.txt
 else
     echo "Error: diff command failed with exit code $diff_exit_code"
