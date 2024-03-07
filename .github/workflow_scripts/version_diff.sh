@@ -34,20 +34,43 @@ if [ $diff_exit_code -eq 0 ]; then
     echo "No difference"
 elif [ $diff_exit_code -eq 1 ]; then
     echo "\nPackage Differences Below:\n"
-    echo "| Previous | Current |" > table_output.txt
-    echo "| :---: | :---: |" >> table_output.txt
+    # Create two associate arrays
+    declare -A prev_packages
+    declare -A curr_packages
+
     while IFS= read -r line; do
-        if [[ $line == *"-e git+https:"* ]] && [[ $line == *"autogluon"* ]]; then
+        # Skip unwanted lines
+        if [[ $line == *"-e git+https:"* ]] && [[ $line == *"autogluon"* ]] || ! [[ $line =~ ^[\<\>] ]]; then
             continue
         fi
+        # Process previous packages
         if [[ $line == \<* ]]; then
-            current=$line
-        elif [[ $line == \>* ]]; then
-            prev=$line
-            echo "| $prev | $current |" >> table_output.txt
+            name=$(echo "$line" | cut -d= -f1 | cut -d' ' -f2)
+            version=$(echo "$line" | cut -d= -f2-)
+            prev_packages[$name]=$version
+        fi
+        # Process current packages
+        if [[ $line == \>* ]]; then
+            name=$(echo "$line" | cut -d= -f1 | cut -d' ' -f2)
+            version=$(echo "$line" | cut -d= -f2-)
+            curr_packages[$name]=$version
         fi
     done < ./diff_output.txt
-    echo "test"
+
+    # Create table
+    echo "| Previous | Current |" > table_output.txt
+    echo "| --- | --- |" >> table_output.txt
+    for key in "${!prev_packages[@]}" "${!curr_packages[@]}"; do
+        prev="< ${key}=${prev_packages[$key]}"
+        curr="< ${key}=${curr_packages[$key]}"
+        if [[ -z ${prev_packages[$key]} ]]; then
+        prev="-"
+        fi
+        if [[ -z ${curr_packages[$key]} ]]; then
+        curr="-"
+        fi
+        echo "| $prev | $curr |" >> table_output.txt
+    done
     cat ./diff_output.txt
 else
     echo "Error: diff command failed with exit code $diff_exit_code"
