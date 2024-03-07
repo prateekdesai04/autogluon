@@ -44,7 +44,7 @@ elif [ $diff_exit_code -eq 1 ]; then
             echo "| $prev | $current |" >> table_output.txt
         fi
     done < ./diff_output.txt
-    cat ./table_output.txt
+    cat ./diff_output.txt
 else
     echo "Error: diff command failed with exit code $diff_exit_code"
     exit 1
