@@ -55,7 +55,7 @@ elif [ $diff_exit_code -eq 1 ]; then
         fi
     done < ./diff_output.txt
     echo "</table>" >> table_output.html
-    cat ./table_output.txt
+    cat ./table_output.html
 else
     echo "Error: diff command failed with exit code $diff_exit_code"
     exit 1
