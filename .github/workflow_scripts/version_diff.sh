@@ -33,23 +33,22 @@ diff_exit_code=$?
 if [ $diff_exit_code -eq 0 ]; then
     echo "No difference"
 elif [ $diff_exit_code -eq 1 ]; then
-    echo "\nPackage Differences Below:\n"
-    # Create two associate arrays
+    echo -e "\nPackage Differences Below:\n"
+    # Arrays to store Name:Version to maintain order in the table
     declare -A prev_packages
     declare -A curr_packages
 
     while IFS= read -r line; do
-        # Skip unwanted lines
-        if [[ $line == *"-e git+https:"* ]] && [[ $line == *"autogluon"* ]] || ! [[ $line =~ ^[\<\>] ]]; then
+        if [[ $line == *"-e git+https:"* ]] && [[ $line == *"autogluon"* ]] && [[ $line == *"Timestamp"* ]] || ! [[ $line =~ ^[\<\>] ]]; then
             continue
         fi
-        # Process current packages
+
         if [[ $line == \<* ]]; then
             name=$(echo "$line" | cut -d= -f1 | cut -d' ' -f2)
             version=$(echo "$line" | cut -d= -f2-)
             curr_packages[$name]=$version
         fi
-        # Process previous packages
+
         if [[ $line == \>* ]]; then
             name=$(echo "$line" | cut -d= -f1 | cut -d' ' -f2)
             version=$(echo "$line" | cut -d= -f2-)
@@ -58,7 +57,7 @@ elif [ $diff_exit_code -eq 1 ]; then
     done < ./diff_output.txt
 
     # Create table
-    echo "| Previous | Current |" > table_output.txt
+    echo "| Previous CI Run | Current CI Run |" > table_output.txt
     echo "| :---: | :---: |" >> table_output.txt
     for key in "${!prev_packages[@]}" "${!curr_packages[@]}"; do
         curr="${key}=${prev_packages[$key]}"
