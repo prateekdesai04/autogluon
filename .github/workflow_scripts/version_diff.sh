@@ -39,7 +39,7 @@ elif [ $diff_exit_code -eq 1 ]; then
     declare -A curr_packages
 
     while IFS= read -r line; do
-        if [[ $line == *"-e git+https:"* ]] && [[ $line == *"autogluon"* ]] || ! [[ $line =~ ^[\<\>] ]]; then
+        if [[ $line == *"-e git+https:"* ]] && [[ $line == *"autogluon"* ]] || ! [[ $line =~ ^[\<\>] ]] || [[ $line == *"Timestamp:"* ]] ; then
             continue
         fi
         
