@@ -33,7 +33,7 @@ diff_exit_code=$?
 if [ $diff_exit_code -eq 0 ]; then
     echo "No difference"
 elif [ $diff_exit_code -eq 1 ]; then
-    echo "\nPackage Differences Below:\n"
+    echo -e "\nPackage Differences Below:\n"
     # Create arrays to store Name:Version for ordering and matching
     declare -A prev_packages
     declare -A curr_packages
@@ -55,7 +55,7 @@ elif [ $diff_exit_code -eq 1 ]; then
             prev_packages[$name]=$version
         fi
     done < ./diff_output.txt
-
+    
     # Create table
     echo "| Previous | Current |" > table_output.txt
     echo "| :---: | :---: |" >> table_output.txt
@@ -63,10 +63,10 @@ elif [ $diff_exit_code -eq 1 ]; then
         prev="${key}=${prev_packages[$key]}"
         curr="${key}=${curr_packages[$key]}"
         if [[ -z ${prev_packages[$key]} ]]; then
-        prev="-"
+            prev="-"
         fi
         if [[ -z ${curr_packages[$key]} ]]; then
-        curr="-"
+            curr="-"
         fi
         echo "| $prev | $curr |" >> table_output.txt
     done
