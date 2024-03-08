@@ -28,11 +28,11 @@ job_type_info = {
         'job_queue': 'CI-MULTI-GPU'
     },
     'CI-CPU-PUSH': {
-        'job_definition': 'test-dl-cpu-push:1',
+        'job_definition': 'test-dl-cpu:1',
         'job_queue': 'CI-CPU'
     },
     'CI-GPU-PUSH': {
-        'job_definition': 'test-dlc-gpu-push:1',
+        'job_definition': 'test-dlc-gpu:1',
         'job_queue': 'CI-GPU'
     },
     'CI-WASM-PUSH': {
