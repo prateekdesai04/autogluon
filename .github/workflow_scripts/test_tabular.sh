@@ -25,6 +25,8 @@ else
     install_multimodal "[tests]"
 fi
 
+echo "Show all installed packages"
+pip freeze
 cd tabular/
 if [ -n "$ADDITIONAL_TEST_ARGS" ]
 then
