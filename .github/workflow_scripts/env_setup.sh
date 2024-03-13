@@ -48,8 +48,6 @@ function install_tabular_platforms {
 
 function install_multimodal {
     source $(dirname "$0")/setup_mmcv.sh
-    echo "Printing CUDA Version: "
-    nvcc --version
     # launch different process for each test to make sure memory is released
     python -m pip install --upgrade pytest-xdist
     install_local_packages "multimodal/$1"

@@ -10,6 +10,8 @@ setup_build_env
 export CUDA_VISIBLE_DEVICES=0
 install_local_packages "common/[tests]" "core/[all,tests]" "features/" "tabular/[all,tests]" "timeseries/[all,tests]"
 
+echo "Show all installed packages"
+pip freeze
 cd timeseries/
 if [ -n "$ADDITIONAL_TEST_ARGS" ]
 then
