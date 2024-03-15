@@ -48,7 +48,6 @@ function install_tabular_platforms {
 
 function install_multimodal {
     source $(dirname "$0")/setup_mmcv.sh
-
     # launch different process for each test to make sure memory is released
     python -m pip install --upgrade pytest-xdist
     install_local_packages "multimodal/$1"
@@ -75,6 +74,7 @@ function install_all_no_tests {
 }
 
 function build_pkg {
+    pip install --upgrade setuptools wheel
     while(($#)) ; do
         cd "$1"/
         python setup.py sdist bdist_wheel

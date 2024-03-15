@@ -1,3 +1,4 @@
+# TEST
 import argparse
 import random
 import re
@@ -12,27 +13,27 @@ from botocore.config import Config
 
 job_type_info = {
     'CI-CPU': {
-        'job_definition': 'autogluon-ci-cpu:3',
+        'job_definition': 'test-dlc-cpu:1',
         'job_queue': 'CI-CPU'
     },
     'CI-GPU': {
-        'job_definition': 'autogluon-ci-gpu:3',
+        'job_definition': 'test-dlc-gpu:1',
         'job_queue': 'CI-GPU'
     },
     'CI-WASM': {
-        'job_definition': 'autogluon-ci-wasm:1',
+        'job_definition': 'test-dlc-wasm:1',
         'job_queue': 'CI-CPU'
     },
     'CI-MULTI-GPU': {
-        'job_definition': 'autogluon-ci-multi-gpu:6',
+        'job_definition': 'test-dlc-multi-gpu:1',
         'job_queue': 'CI-MULTI-GPU'
     },
     'CI-CPU-PUSH': {
-        'job_definition': 'autogluon-ci-cpu-push:3',
+        'job_definition': 'test-dlc-cpu:1',
         'job_queue': 'CI-CPU'
     },
     'CI-GPU-PUSH': {
-        'job_definition': 'autogluon-ci-gpu-push:4',
+        'job_definition': 'test-dlc-gpu:1',
         'job_queue': 'CI-GPU'
     },
     'CI-WASM-PUSH': {
@@ -40,7 +41,7 @@ job_type_info = {
         'job_queue': 'CI-CPU'
     },
     'CI-MULTI-GPU-PUSH': {
-        'job_definition': 'autogluon-ci-multi-gpu-push:2',
+        'job_definition': 'test-dlc-multi-gpu-push:1',
         'job_queue': 'CI-MULTI-GPU'
     },
 }

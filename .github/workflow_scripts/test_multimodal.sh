@@ -11,6 +11,8 @@ function test_multimodal {
     install_local_packages "common/[tests]" "core/[all,tests]" "features/"
     install_multimodal "[tests]"
 
+    echo "Show all installed packages"
+    pip freeze
     cd multimodal/
     if [ -n "$ADDITIONAL_TEST_ARGS" ]
     then
