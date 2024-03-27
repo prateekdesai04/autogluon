@@ -36,10 +36,10 @@ install_requires = [
     "seqeval>=1.2.2,<1.3.0",
     "evaluate>=0.4.0,<0.5.0",
     "timm>=0.9.5,<0.10.0",
-    "torchvision>=0.16.0,<0.17.0",
+    "torchvision>=0.15.0,<0.17.0",
     "scikit-image>=0.19.1,<0.21.0",
     "text-unidecode>=1.3,<1.4",
-    "torchmetrics>=1.2.0,<1.3.0",
+    "torchmetrics>=1.0.0,<1.3.0",
     "nptyping>=1.4.4,<2.5.0",
     "omegaconf>=2.1.1,<2.3.0",
     f"autogluon.core[raytune]=={version}",
@@ -65,7 +65,7 @@ tests_require = [
     "onnx>=1.13.0,<1.14.0",
     "onnxruntime>=1.15.0,<1.16.0;platform_system=='Darwin'",
     "onnxruntime-gpu>=1.15.0,<1.16.0;platform_system!='Darwin'",
-    "tensorrt>=8.6.0,<8.6.2;platform_system=='Linux' and python_version<'3.11'",
+    "tensorrt>=8.6.0,<8.6.2;platform_system=='Linux'",
 ]
 
 extras_require = {
