@@ -37,8 +37,6 @@ elif [ $diff_exit_code -eq 1 ]; then
     # Create arrays to store Name:Version for ordering and matching
     declare -A prev_packages
     declare -A curr_packages
-    prev_unique_packages=()
-    curr_unique_packages=()
 
     while IFS= read -r line; do 
 
@@ -71,15 +69,7 @@ elif [ $diff_exit_code -eq 1 ]; then
         if [[ -z ${curr_packages[$key]} ]]; then
             curr="-"
         fi
-        prev_unique_packages+=("$prev")
-        curr_unique_packages+=("$curr")
-    done
-
-    uniq_prev_packages=($(echo "${prev_unique_packages[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
-    uniq_curr_packages=($(echo "${curr_unique_packages[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
-
-    for i in "${!uniq_prev_packages[@]}"; do
-        echo "| ${uniq_prev_packages[$i]} | ${uniq_curr_packages[$i]} |" >> table_output.txt
+        echo "| $prev | $curr |" >> table_output.txt
     done
 
     cat ./diff_output.txt
