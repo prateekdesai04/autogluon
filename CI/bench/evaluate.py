@@ -140,3 +140,88 @@ if branch_name != "master":
 
     with open("final_eval.txt", "w") as file:
         file.write(pr_comment)
+
+# Currently what happens is that for every master run - we aggregate and clean
+# and store the master file somewhere in S3
+# Keep in mind that we already have a folder where we have the cleaned results of v1.0
+# We can say this is hardcoded, we do not keep running v1.0
+# So what we do now is to take the cleaned master file and cleaned 1.0 file and evaluate
+        
+else:
+    paths = []
+    frameworks = []
+
+    # Copy v1.0 results from S3
+    copy_command = "aws s3 cp --recursive s3://autogluon-ci-benchmark/version_1.0/cleaned/tabular/ ./results"
+
+    subprocess.run(copy_command, shell=True)
+
+    for file in os.listdir("./results"):
+        if file.endswith(".csv"):
+            file = os.path.join("./results", file)
+            df = pd.read_csv(file)
+            paths.append(os.path.basename(file))
+            frameworks += list(df["framework"].unique())
+
+    modified_list_paths = []
+    modified_list_frameworks = []
+
+    for path in paths:
+        modified_list_paths.append('--paths')
+        modified_list_paths.append(path)
+
+    for framework in frameworks:
+        modified_list_frameworks.append('--frameworks-run')
+        modified_list_frameworks.append(framework)
+        
+    paths = modified_list_paths
+    frameworks = modified_list_frameworks
+
+    print("\nFrameworks: ", frameworks)
+    print("\nPaths: ", paths)
+
+    subprocess.run(
+        [
+            "agbench",
+            "evaluate-amlb-results",
+            *frameworks,
+            "--results-dir-input",
+            "./results/",
+            *paths,
+            f"--results-dir-output",
+            f"./evaluate",
+            "--no-clean-data",
+        ]
+    )
+
+    unique_framework = {}
+    # Renaming the frameworks for dashboard formatting
+    for file in os.listdir("./evaluate"):
+        if file.endswith("dataset_all.csv"):
+            file_path = os.path.join("./evaluate", file)
+            df = pd.read_csv(file_path)
+            for index, row in df.iterrows():
+                if (row['framework'].split('_')[-1] not in unique_framework) and ("AutoGluon" in row['framework']):
+                    unique_framework[row['framework']] = row['framework'].split('_')[-1]
+    
+    if len(unique_framework) > 1:
+        unique_framework = dict(sorted(unique_framework.items(), key=lambda item: item[1]))
+        earliest_timestamp = next(iter(unique_framework))
+        unique_framework[earliest_timestamp] = 'AutoGluon_master'
+        for index, (key, value) in enumerate(unique_framework.items()):
+            if index > 0:
+                unique_framework[key] = f'AutoGluon_v.1.0_{index}'
+
+    df['framework'] = df['framework'].map(unique_framework)
+    df.to_csv(file_path, index=False)
+    
+    for file in os.listdir("./evaluate/pairwise/"):
+        if file.endswith(".csv"):
+            file_path = os.path.join("./evaluate/pairwise/", file)
+            df = pd.read_csv(file_path)
+
+    df['framework'] = df['framework'].map(unique_framework)
+    df.to_csv(file_path, index=False)
+
+    back_copy_command = "aws s3 cp --recursive ./evaluate s3://autogluon-ci-benchmark/version_1.0/evaluated/tabular/"
+    subprocess.run(copy_command, shell=True)
