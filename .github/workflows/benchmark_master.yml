@@ -2,7 +2,7 @@
 name: Benchmark Master Branch
 on:
   push:
-    branches: ["master"]  # Uncomment post v1.0
+    branches: ["master", "report_gen"]  # Uncomment post v1.0
   # schedule:
   #   - cron: '00 09 * * SUN' #  UTC 9:00(2:00 PST Time) every Sunday
 
