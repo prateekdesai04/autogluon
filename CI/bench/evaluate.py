@@ -21,12 +21,15 @@ module_name = args.module_name
 time_limit = args.time_limit
 branch_name = args.branch_name
 
+print("\nConfig Path: ", config_path)
+
 try:
 
     for root, dirs, files in os.walk(config_path):
         for file in files:
             if file == f"{module_name}_cloud_configs.yaml":
                 config_file = os.path.join(root, file)
+                print("\nConfig File: ", config_file)
                 break
 
     with open(config_file, "r") as f:
@@ -155,9 +158,17 @@ try:
         frameworks = []
 
         # Copy v1.0 results from S3
-        copy_command = "aws s3 cp --recursive s3://autogluon-ci-benchmark/version_1.0/cleaned/tabular/ ./results"
-
-        subprocess.run(copy_command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        subprocess.run(
+            [
+                "aws",
+                "s3",
+                "cp",
+                "--recursive",
+                "s3://autogluon-ci-benchmark/version_1.0/cleaned/tabular/",
+                "./results",
+            ],
+            check=True
+        )
 
         print("\nListing Dirs")
 
@@ -197,7 +208,8 @@ try:
                 f"--results-dir-output",
                 f"./evaluate",
                 "--no-clean-data",
-            ]
+            ],
+            check=True
         )
 
         print("\nWalking Eval directory")
@@ -233,6 +245,6 @@ try:
 
         # Test
         back_copy_command = "aws s3 cp --recursive ./evaluate/ s3://autogluon-ci-benchmark/version_1.0/evaluated/tabular/"
-        subprocess.run(copy_command, shell=True, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        subprocess.run(back_copy_command, check=True)
 except Exception as e:
     print(f"An exception occurred: {e}")
