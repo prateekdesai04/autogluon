@@ -75,10 +75,10 @@ jobs:
           npm install -g aws-cdk
           /bin/bash ./.github/workflow_scripts/run_benchmark.sh tabular best tabular_test 1h8c ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
       - name: Upload evaluation results as artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: upload-evaluation-results
-        path: evaluate
+        uses: actions/upload-artifact@v2
+        with:
+          name: upload-evaluation-results
+          path: evaluate
 
   benchmark-timeseries:
     needs: benchmark-tabular
@@ -121,10 +121,10 @@ jobs:
           npm install -g aws-cdk
           /bin/bash ./.github/workflow_scripts/run_benchmark.sh timeseries dev timeseries_small 10m4c ${{ env.AG_BRANCH_NAME }} ${{ github.sha }}
       - name: Upload evaluation results as artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: upload-evaluation-results
-        path: evaluate
+        uses: actions/upload-artifact@v2
+        with:
+          name: upload-evaluation-results
+          path: evaluate
 
   # benchmark-multimodal-text:
   #   needs: benchmark-timeseries
