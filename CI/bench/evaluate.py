@@ -157,7 +157,9 @@ try:
         # Copy v1.0 results from S3
         copy_command = "aws s3 cp --recursive s3://autogluon-ci-benchmark/version_1.0/cleaned/tabular/ ./results"
 
-        subprocess.run(copy_command)
+        subprocess.run(copy_command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+
+        print("\nListing Dirs")
 
         for file in os.listdir("./results"):
             if file.endswith(".csv"):
@@ -198,6 +200,8 @@ try:
             ]
         )
 
+        print("\nWalking Eval directory")
+
         unique_framework = {}
         # Renaming the frameworks for dashboard formatting
         for file in os.listdir("./evaluate"):
@@ -228,7 +232,7 @@ try:
         df.to_csv(file_path, index=False)
 
         # Test
-        back_copy_command = "aws s3 cp --recursive ./evaluate s3://autogluon-ci-benchmark/version_1.0/evaluated/tabular/"
-        subprocess.run(copy_command)
+        back_copy_command = "aws s3 cp --recursive ./evaluate/ s3://autogluon-ci-benchmark/version_1.0/evaluated/tabular/"
+        subprocess.run(copy_command, shell=True, check=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 except Exception as e:
     print(f"An exception occurred: {e}")
