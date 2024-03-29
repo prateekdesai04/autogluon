@@ -244,7 +244,19 @@ try:
         df.to_csv(file_path, index=False)
 
         # Test
-        back_copy_command = "aws s3 cp --recursive ./evaluate/ s3://autogluon-ci-benchmark/version_1.0/evaluated/tabular/"
-        subprocess.run(back_copy_command, check=True)
+        print("\nPrinting Files:\n ")
+        subprocess.run("ls",check=True)
+
+        subprocess.run(
+            [
+                "aws",
+                "s3",
+                "cp",
+                "--recursive",
+                "./evaluate",
+                "s3://autogluon-ci-benchmark/version_1.0/evaluated/tabular/",
+            ],
+            check=True
+        )
 except Exception as e:
     print(f"An exception occurred: {e}")
