@@ -177,6 +177,7 @@ else:
     paths = modified_list_paths
     frameworks = modified_list_frameworks
 
+    # Test
     print("\nFrameworks: ", frameworks)
     print("\nPaths: ", paths)
 
