@@ -77,7 +77,7 @@ jobs:
       - name: Upload evaluation results as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: upload-evaluation-results
+          name: upload-evaluation-results-tabular
           path: evaluate
 
   benchmark-timeseries:
@@ -123,7 +123,7 @@ jobs:
       - name: Upload evaluation results as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: upload-evaluation-results
+          name: upload-evaluation-results-timeseries
           path: evaluate
 
   # benchmark-multimodal-text:

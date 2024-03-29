@@ -1,11 +1,12 @@
 import argparse
 import os
 import subprocess
+from datetime import datetime
 
 import pandas as pd
 import yaml
 
-def process_results():
+def process_results(eval_flag: bool):
     try:
         paths = []
         frameworks = []
@@ -57,10 +58,17 @@ def process_results():
         if len(unique_framework) > 1:
             unique_framework = dict(sorted(unique_framework.items(), key=lambda item: item[1]))
             earliest_timestamp = next(iter(unique_framework))
-            unique_framework[earliest_timestamp] = 'AutoGluon_master'
+            if eval_flag:
+                unique_framework[earliest_timestamp] = 'AutoGluon_v1.0'
+            else:
+                unique_framework[earliest_timestamp] = 'AutoGluon_master'
             for index, (key, value) in enumerate(unique_framework.items()):
-                if index > 0:
+                if index > 0 and not eval_flag:
                     unique_framework[key] = f'AutoGluon_PR_{index}'
+                else:
+                    unique_framework[key] = f'AutoGluon_master_branch'
+
+        print("\nUnique Frameworks: ", unique_framework)
 
         df['framework'] = df['framework'].map(unique_framework)
         df.to_csv(file_path, index=False)
@@ -75,6 +83,7 @@ def process_results():
         return df
     except Exception as e:
         raise Exception(f"Failed to process results: {e}") from e
+
 
 def main():
 
@@ -149,7 +158,16 @@ def main():
             )
 
             # Call process_results()
-            df = process_results()
+            df = process_results(True)
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            subprocess.run(
+                [
+                    "mkdir", 
+                    timestamp,
+                ],
+                check=True
+            )
 
             subprocess.run(
                 [
@@ -158,14 +176,14 @@ def main():
                     "cp",
                     "--recursive",
                     "./evaluate",
-                    f"s3://autogluon-ci-benchmark/version_1.0/evaluated/{module_name}/",
+                    f"s3://autogluon-ci-benchmark/version_1.0/evaluated/{module_name}/{timestamp}",
                 ],
                 check=True
             )
         # If it is not master then it is a PR, perform the evaluation w.r.t cleaned master bench results
         else:
             # Call process_results()
-            df = process_results()
+            df = process_results(False)
 
             # Compare aggregated results with Master branch and return comment
             master_win_rate = 0
