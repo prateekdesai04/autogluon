@@ -78,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: upload-evaluation-results-tabular
-          path: evaluate
+          path: evaluate/report_results.csv
 
   benchmark-timeseries:
     needs: benchmark-tabular
@@ -124,7 +124,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: upload-evaluation-results-timeseries
-          path: evaluate
+          path: evaluate/report_results.csv
 
   # benchmark-multimodal-text:
   #   needs: benchmark-timeseries

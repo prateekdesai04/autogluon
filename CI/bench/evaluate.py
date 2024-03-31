@@ -102,6 +102,8 @@ def main():
     module_name = args.module_name
     time_limit = args.time_limit
     branch_name = args.branch_name
+    df1 = pd.DataFrame()
+    df2 = pd.DataFrame()
 
     try:
         for root, dirs, files in os.walk(config_path):
@@ -160,14 +162,18 @@ def main():
             # Call process_results()
             df = process_results(True)
 
+            for file in os.listdir("./evaluate"):
+                if file.endswith("results_ranked_valid.csv"):
+                    file_path = os.path.join("./evaluate", file)
+                    df1 = pd.read_csv(file_path, usecols=["time_train_s", "time_infer_s"])
+
+                if file.startswith("AutoGluon") and file.endswith(".csv"):
+                    file_path = os.path.join("./evaluate", file)
+                    df2 = pd.read_csv(file_path, usecols=["winrate"])
+                    df1["winrate"] = df2["winrate"]
+
+            df1.to_csv("./evaluate/report_results.csv", index=False)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            subprocess.run(
-                [
-                    "mkdir", 
-                    timestamp,
-                ],
-                check=True
-            )
 
             subprocess.run(
                 [
@@ -175,7 +181,7 @@ def main():
                     "s3",
                     "cp",
                     "--recursive",
-                    "./evaluate",
+                    "./evaluate/report_results.csv",
                     f"s3://autogluon-ci-benchmark/version_1.0/evaluated/{module_name}/{timestamp}",
                 ],
                 check=True
