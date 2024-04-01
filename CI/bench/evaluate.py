@@ -172,32 +172,16 @@ def main():
                     df2 = pd.read_csv(file_path, usecols=["winrate"])
                     df1["winrate"] = df2["winrate"]
 
-            df1.to_csv("./report_results.csv", index=False)
-            df1.to_csv("./evaluate/report_results.csv", index=False, mode='w')
+            df1.to_csv("./report_results.csv", index=False, mode='w')
+            # df1.to_csv("./evaluate/report_results.csv", index=False, mode='w')
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-            subprocess.run(
-                [
-                    "ls",
-                ],
-                check=True
-            )
-
-            subprocess.run(
-                [
-                    "ls",
-                    "./evaluate"
-                ]
-            )
-
 
             subprocess.run(
                 [
                     "aws",
                     "s3",
                     "cp",
-                    "--recursive",
-                    "./evaluate",
+                    "./report_results.csv",
                     f"s3://autogluon-ci-benchmark/version_1.0/evaluated/{module_name}/{timestamp}",
                 ],
                 check=True
