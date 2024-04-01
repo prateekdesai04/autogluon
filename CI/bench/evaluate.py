@@ -137,7 +137,7 @@ def main():
                 f"--results-dir-input",
                 f"s3://autogluon-ci-benchmark/aggregated/{module_name}/{benchmark_name}/",
                 "--file-prefix",
-                f"results_automlbenchmark_{time_limit}"
+                f"results_automlbenchmark_{time_limit}",
                 "--benchmark-name-in-input-path",
                 "--results-dir-output",
                 "./results",
