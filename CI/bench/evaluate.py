@@ -136,13 +136,13 @@ def main():
                 benchmark_name,
                 f"--results-dir-input",
                 f"s3://autogluon-ci-benchmark/aggregated/{module_name}/{benchmark_name}/",
+                "--file-prefix",
+                f"results_automlbenchmark_{time_limit}"
                 "--benchmark-name-in-input-path",
-                "--constraints",
-                time_limit,
                 "--results-dir-output",
                 "./results",
             ],
-            check=True
+            check=True,
         )
 
         # If branch is master Copy v1.0 results from S3
@@ -163,17 +163,21 @@ def main():
             df = process_results(True)
 
             for file in os.listdir("./evaluate"):
+                print("\nFile Name is: ", file)
                 if file.endswith("results_ranked_valid.csv"):
                     file_path = os.path.join("./evaluate", file)
                     df1 = pd.read_csv(file_path, usecols=["time_train_s", "time_infer_s"])
 
                 if file.startswith("AutoGluon") and file.endswith(".csv"):
                     file_path = os.path.join("./evaluate", file)
-                    df2 = pd.read_csv(file_path, usecols=["winrate"])
+                    df2 = pd.read_csv(file_path, usecols=["framework", "winrate"])
+                    df1 = df1.assign(winrate=None, framework=None)
                     df1["winrate"] = df2["winrate"]
+                    df1["framework"] = df2["framework"]
+                    df1 = df1.reindex(columns=["framework", "winrate", "time_train_s", "time_infer_s"])
+
 
             df1.to_csv("./report_results.csv", index=False, mode='w')
-            # df1.to_csv("./evaluate/report_results.csv", index=False, mode='w')
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
             subprocess.run(
@@ -182,7 +186,7 @@ def main():
                     "s3",
                     "cp",
                     "./report_results.csv",
-                    f"s3://autogluon-ci-benchmark/version_1.0/evaluated/{module_name}/{timestamp}",
+                    f"s3://autogluon-ci-benchmark/version_1.0/evaluated/{module_name}/{timestamp}/",
                 ],
                 check=True
             )
