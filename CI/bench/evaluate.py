@@ -58,6 +58,7 @@ def process_results(eval_flag: bool):
         if len(unique_framework) > 1:
             unique_framework = dict(sorted(unique_framework.items(), key=lambda item: item[1]))
             earliest_timestamp = next(iter(unique_framework))
+            print("\nEval Flag is: ", eval_flag)
             if eval_flag:
                 unique_framework[earliest_timestamp] = 'AutoGluon_v1.0'
             else:
@@ -176,22 +177,21 @@ def main():
             )
 
             # Call process_results()
-            df = process_results(True)
+            df = process_results(eval_flag=True)
 
-            for file in os.listdir("./evaluate"):
-                print("\nFile Name is: ", file)
-                if file.endswith("results_ranked_valid.csv"):
-                    file_path = os.path.join("./evaluate", file)
-                    df1 = pd.read_csv(file_path, usecols=["time_train_s", "time_infer_s"])
+            for root, dirs, files in os.walk("./evaluate"):
+                for file in files:
+                    if file.endswith("results_ranked_valid.csv"):
+                        file_path = os.path.join("./evaluate", file)
+                        df1 = pd.read_csv(file_path, usecols=["time_train_s", "time_infer_s"])
 
-                if file.startswith("AutoGluon") and file.endswith(".csv"):
-                    file_path = os.path.join("./evaluate", file)
-                    df2 = pd.read_csv(file_path, usecols=["framework", "winrate"])
-                    df1 = df1.assign(winrate=None, framework=None)
-                    df1["winrate"] = df2["winrate"]
-                    df1["framework"] = df2["framework"]
-                    df1 = df1.reindex(columns=["framework", "winrate", "time_train_s", "time_infer_s"])
-
+                    if file.startswith("AutoGluon") and file.endswith(".csv") and "pairwise" in root:
+                        file_path = os.path.join(root, file)
+                        df2 = pd.read_csv(file_path, usecols=["framework", "winrate"])
+                        df1 = df1.assign(winrate=None, framework=None)
+                        df1["winrate"] = df2["winrate"]
+                        df1["framework"] = df2["framework"]
+                        df1 = df1.reindex(columns=["framework", "winrate", "time_train_s", "time_infer_s"])
 
             df1.to_csv("./report_results.csv", index=False, mode='w')
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -209,7 +209,7 @@ def main():
         # If it is not master then it is a PR, perform the evaluation w.r.t cleaned master bench results
         else:
             # Call process_results()
-            df = process_results(False)
+            df = process_results(eval_flag=False)
 
             # Compare aggregated results with Master branch and return comment
             master_win_rate = 0
