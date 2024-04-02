@@ -11,7 +11,7 @@ def process_results(eval_flag: bool):
         paths = []
         frameworks = []
         for file in os.listdir("./results"):
-            if file.endswith(".csv"):
+            if file.endswith(".csv") and not file.endswith("_min.csv"):
                 file = os.path.join("./results", file)
                 df = pd.read_csv(file)
                 paths.append(os.path.basename(file))
@@ -58,11 +58,6 @@ def process_results(eval_flag: bool):
         if len(unique_framework) > 1:
             unique_framework = dict(sorted(unique_framework.items(), key=lambda item: item[1]))
             earliest_timestamp = next(iter(unique_framework))
-            print("\nEval Flag is: ", eval_flag)
-            if eval_flag:
-                unique_framework[earliest_timestamp] = 'AutoGluon_v1.0'
-            else:
-                unique_framework[earliest_timestamp] = 'AutoGluon_master'
             for index, (key, value) in enumerate(unique_framework.items()):
                 if index > 0 and not eval_flag:
                     unique_framework[key] = f'AutoGluon_PR_{index}'
@@ -130,22 +125,6 @@ def main():
             check=True,
         )
 
-        # subprocess.run(
-        #     [
-        #         "agbench",
-        #         "clean-amlb-results",
-        #         benchmark_name,
-        #         f"--results-dir-input",
-        #         f"s3://autogluon-ci-benchmark/aggregated/{module_name}/{benchmark_name}/",
-        #         "--file-prefix",
-        #         f"results_automlbenchmark_{time_limit}",
-        #         "--benchmark-name-in-input-path",
-        #         "--results-dir-output",
-        #         "./results",
-        #     ],
-        #     check=True,
-        # )
-
         subprocess.run(
             [
                 "agbench",
@@ -153,14 +132,30 @@ def main():
                 benchmark_name,
                 f"--results-dir-input",
                 f"s3://autogluon-ci-benchmark/aggregated/{module_name}/{benchmark_name}/",
+                "--file-prefix",
+                f"results_automlbenchmark_{time_limit}",
                 "--benchmark-name-in-input-path",
-                "--constraints",
-                time_limit,
                 "--results-dir-output",
                 "./results",
             ],
             check=True,
         )
+
+        # subprocess.run(
+        #     [
+        #         "agbench",
+        #         "clean-amlb-results",
+        #         benchmark_name,
+        #         f"--results-dir-input",
+        #         f"s3://autogluon-ci-benchmark/aggregated/{module_name}/{benchmark_name}/",
+        #         "--benchmark-name-in-input-path",
+        #         "--constraints",
+        #         time_limit,
+        #         "--results-dir-output",
+        #         "./results",
+        #     ],
+        #     check=True,
+        # )
 
         # If branch is master Copy v1.0 results from S3
         if branch_name == "master":
