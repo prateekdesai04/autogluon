@@ -129,6 +129,22 @@ def main():
             check=True,
         )
 
+        # subprocess.run(
+        #     [
+        #         "agbench",
+        #         "clean-amlb-results",
+        #         benchmark_name,
+        #         f"--results-dir-input",
+        #         f"s3://autogluon-ci-benchmark/aggregated/{module_name}/{benchmark_name}/",
+        #         "--file-prefix",
+        #         f"results_automlbenchmark_{time_limit}",
+        #         "--benchmark-name-in-input-path",
+        #         "--results-dir-output",
+        #         "./results",
+        #     ],
+        #     check=True,
+        # )
+
         subprocess.run(
             [
                 "agbench",
@@ -136,9 +152,9 @@ def main():
                 benchmark_name,
                 f"--results-dir-input",
                 f"s3://autogluon-ci-benchmark/aggregated/{module_name}/{benchmark_name}/",
-                "--file-prefix",
-                f"results_automlbenchmark_{time_limit}",
                 "--benchmark-name-in-input-path",
+                "--constraints",
+                time_limit,
                 "--results-dir-output",
                 "./results",
             ],
