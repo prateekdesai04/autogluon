@@ -28,7 +28,9 @@ fi
 cd tabular/
 if [ -n "$ADDITIONAL_TEST_ARGS" ]
 then
-    python -m pytest --junitxml=results.xml --runslow "$ADDITIONAL_TEST_ARGS" tests
+    python -m pytest --junitxml=results.xml --runslow "$ADDITIONAL_TEST_ARGS" tests/regressiontests tests/unittests/calibrate tests/unittests/configs tests/unittests/data tests/unittests/dynamic_stacking tests/unittests/edgecases tests/unittests/experimental tests/unittests/models tests/unittests/pseudolabel tests/unittests/test_tabular.py tests/test_check_style.py tests/unittests/resource_allocation
+    # python -m pytest --junitxml=results.xml --runslow "$ADDITIONAL_TEST_ARGS" tests/regressiontests tests/test_check_style.py tests/unittests tests/test_resource_allocation_combined.py
 else
-    python -m pytest --junitxml=results.xml --runslow tests
+    python -m pytest --junitxml=results.xml --runslow -vv tests/regressiontests tests/unittests/calibrate tests/unittests/configs tests/unittests/data tests/unittests/dynamic_stacking tests/unittests/edgecases tests/unittests/experimental tests/unittests/models tests/unittests/pseudolabel tests/unittests/test_tabular.py tests/test_check_style.py tests/unittests/resource_allocation
+    # python -m pytest --junitxml=results.xml --runslow tests/regressiontests tests/test_check_style.py tests/unittests tests/test_resource_allocation_combined.py
 fi
