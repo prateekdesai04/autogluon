@@ -60,10 +60,16 @@ def process_results(eval_flag: bool):
             unique_framework = dict(sorted(unique_framework.items(), key=lambda item: item[1]))
             earliest_timestamp = next(iter(unique_framework))
             for index, (key, value) in enumerate(unique_framework.items()):
-                if index > 0:
-                    unique_framework[key] = f'AutoGluon_PR_{index}'
+                if eval_flag:
+                    if index > 0:
+                        unique_framework[key] = f'AutoGluon_master'
+                    else:
+                        unique_framework[key] = f'AutoGluon_v1.0'
                 else:
-                    unique_framework[key] = f'AutoGluon_master_branch'
+                    if index > 0:
+                        unique_framework[key] = f'AutoGluon_PR_{index}'
+                    else:
+                        unique_framework[key] = f'AutoGluon_master_branch'
 
         print("\nUnique Frameworks Post Eval Formatting: ", unique_framework)
 
@@ -164,26 +170,9 @@ def main():
             check=True,
         )
 
-        # subprocess.run(
-        #     [
-        #         "agbench",
-        #         "clean-amlb-results",
-        #         benchmark_name,
-        #         f"--results-dir-input",
-        #         f"s3://autogluon-ci-benchmark/aggregated/{module_name}/{benchmark_name}/",
-        #         "--benchmark-name-in-input-path",
-        #         "--constraints",
-        #         time_limit,
-        #         "--results-dir-output",
-        #         "./results",
-        #     ],
-        #     check=True,
-        # )
-
         # If branch is master Copy v1.0 results from S3
         if branch_name == "master":
-
-            if benchmark_type == "tabular*" or benchmark_type == "timeseries*":
+            if benchmark_type.startswith("tabular") or benchmark_type.startswith("timeseries"):
                 subprocess.run(
                     [
                         "aws",
@@ -194,7 +183,7 @@ def main():
                         "./results",
                     ],
                     check=True,
-                )
+                ) 
             else:
                 subprocess.run(
                     [
@@ -219,16 +208,16 @@ def main():
 
                     if file.startswith("AutoGluon") and file.endswith(".csv") and "pairwise" in root:
                         file_path = os.path.join(root, file)
-                        df2 = pd.read_csv(file_path, usecols=["framework", "winrate"])
-                        df1 = df1.assign(winrate=None, framework=None)
-                        df1["winrate"] = df2["winrate"]
+                        df2 = pd.read_csv(file_path, usecols=["framework", "Winrate"])
+                        df1 = df1.assign(Winrate=None, framework=None)
+                        df1["Winrate"] = df2["Winrate"]
                         df1["framework"] = df2["framework"]
-                        df1 = df1.reindex(columns=["framework", "winrate", "time_train_s", "time_infer_s"])
+                        df1 = df1.reindex(columns=["framework", "Winrate", "time_train_s", "time_infer_s"])
 
             df1.to_csv("./report_results.csv", index=False, mode='w')
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-            if benchmark_type == "tabular*" or benchmark_type == "timeseries*":
+            if benchmark_type.startswith("tabular") or benchmark_type.startswith("timeseries"):
                 subprocess.run(
                     [
                         "aws",
