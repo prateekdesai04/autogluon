@@ -14,7 +14,7 @@ source $(dirname "$0")/env_setup.sh
 setup_benchmark_env
 
 /bin/bash CI/bench/generate_bench_config.sh $MODULE $PRESET $BENCHMARK $TIME_LIMIT $BRANCH_OR_PR_NUMBER
-echo "----Printing Cloud Configs----"
+echo "----Copying and Printing Cloud Configs----"
 cat $MODULE"_cloud_configs.yaml"
 agbench run $MODULE"_cloud_configs.yaml" --wait
 
@@ -36,6 +36,11 @@ fi
 
 python CI/bench/evaluate.py --config_path ./ag_bench_runs/$MODULE/ --module_name $MODULE --time_limit $TIME_LIMIT --branch_name $BRANCH_OR_PR_NUMBER --benchmark_type $BENCHMARK
 
+echo "Printing results directory"
+ls ./results
+echo "Deleting version1.0_file"
+rm -f ./results/version1.0*
+
 for file in ./results/*; do
     CLEANED_PATH="s3://autogluon-ci-benchmark/cleaned/$MODULE"
     EVALUATION_PATH="s3://autogluon-ci-benchmark/evaluation/$MODULE"
@@ -49,6 +54,7 @@ for file in ./results/*; do
         EVALUATION_PATH="$EVALUATION_PATH/$BENCHMARK"
     fi
 
+    # Need to delete the version1.0 file here as there might be two files 
     aws s3 cp "$file" "$CLEANED_PATH/$BRANCH_NAME/$SHA/$(basename "$file")"
     aws s3 rm --recursive "$CLEANED_PATH/$BRANCH_NAME/latest/"
     aws s3 cp "$file" "$CLEANED_PATH/$BRANCH_NAME/latest/$(basename "$file")"

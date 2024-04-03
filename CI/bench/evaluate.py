@@ -11,7 +11,7 @@ def process_results(eval_flag: bool):
         paths = []
         frameworks = []
         for file in os.listdir("./results"):
-            if file.endswith(".csv") and not file.endswith("_min.csv"):
+            if file.endswith(".csv") and not file.endswith("_min.csv") and not file.endswith(".parquet"):
                 file = os.path.join("./results", file)
                 df = pd.read_csv(file)
                 paths.append(os.path.basename(file))
@@ -30,6 +30,7 @@ def process_results(eval_flag: bool):
             
         paths = modified_list_paths
         frameworks = modified_list_frameworks
+        print("\nPre-Evaluation Frameworks: ", frameworks)
         subprocess.run(
             [
                 "agbench",
@@ -59,12 +60,12 @@ def process_results(eval_flag: bool):
             unique_framework = dict(sorted(unique_framework.items(), key=lambda item: item[1]))
             earliest_timestamp = next(iter(unique_framework))
             for index, (key, value) in enumerate(unique_framework.items()):
-                if index > 0 and not eval_flag:
+                if index > 0:
                     unique_framework[key] = f'AutoGluon_PR_{index}'
                 else:
                     unique_framework[key] = f'AutoGluon_master_branch'
 
-        print("\nUnique Frameworks: ", unique_framework)
+        print("\nUnique Frameworks Post Eval Formatting: ", unique_framework)
 
         df['framework'] = df['framework'].map(unique_framework)
         df.to_csv(file_path, index=False)
@@ -144,6 +145,25 @@ def main():
             check=True,
         )
 
+        # Delete the files .parquet, _min.csv and _min.parquet
+        print("\nPrinting Contents of Results post cleaning")
+        subprocess.run(
+            [
+                "ls",
+                "./results",
+            ],
+            check=True,
+        )
+
+        subprocess.run(
+            [
+                "sh",
+                "-c",
+                "rm -f ./results/*_min.csv ./results/*_min.parquet ./results/*.parquet",
+            ],
+            check=True,
+        )
+
         # subprocess.run(
         #     [
         #         "agbench",
@@ -188,7 +208,6 @@ def main():
                     check=True,
                 )
 
-
             # Call process_results()
             df = process_results(eval_flag=True)
 
@@ -209,16 +228,28 @@ def main():
             df1.to_csv("./report_results.csv", index=False, mode='w')
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-            subprocess.run(
-                [
-                    "aws",
-                    "s3",
-                    "cp",
-                    "./report_results.csv",
-                    f"s3://autogluon-ci-benchmark/version_1.0/evaluated/{module_name}/{timestamp}/",
-                ],
-                check=True
-            )
+            if benchmark_type == "tabular*" or benchmark_type == "timeseries*":
+                subprocess.run(
+                    [
+                        "aws",
+                        "s3",
+                        "cp",
+                        "./report_results.csv",
+                        f"s3://autogluon-ci-benchmark/version_1.0/evaluated/{module_name}/{timestamp}/",
+                    ],
+                    check=True,
+                )
+            else:
+                subprocess.run(
+                    [
+                        "aws",
+                        "s3",
+                        "cp",
+                        "./report_results.csv",
+                        f"s3://autogluon-ci-benchmark/version_1.0/evaluated/{module_name}/{benchmark_type}/{timestamp}/",
+                    ],
+                    check=True,
+                )
         # If it is not master then it is a PR, perform the evaluation w.r.t cleaned master bench results
         else:
             # Call process_results()
