@@ -59,6 +59,16 @@ def pytest_collection_modifyitems(config, items):
     items.clear()
     items.extend(other_tests)
     items.extend(resource_allocation_tests)
+    print(f"items to be tested are:")
+    item_file = []
+    for item in items:
+        path = item.fspath
+        # remove prefix "/Users/tonyhu/workplace/autogluon/autogluon/tabular/tests/" from path
+        path = str(path).replace("/Users/tonyhu/workplace/autogluon/autogluon/tabular/tests/", "")
+        if path in item_file:
+            continue
+        item_file.append(path)
+        print(path)
 
 
 class DatasetLoaderHelper:
