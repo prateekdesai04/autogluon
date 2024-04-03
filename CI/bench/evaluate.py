@@ -91,6 +91,8 @@ def main():
     parser.add_argument("--module_name", help="module on which we run benchmark", type=str, required=True)
     parser.add_argument("--time_limit", help="time limit of the benchmark run", type=str, required=True)
     parser.add_argument("--branch_name", help="if it happens to be master then just push the cleaned result, do not evaluate", type=str, required=True)
+    parser.add_argument("--benchmark_type", help="type of benchmark to run, tabular, timeseries, automm-text etc.", type=str, required=True)
+
 
     args = parser.parse_args()
 
@@ -98,6 +100,7 @@ def main():
     module_name = args.module_name
     time_limit = args.time_limit
     branch_name = args.branch_name
+    benchmark_type = args.benchmark_type
     df1 = pd.DataFrame()
     df2 = pd.DataFrame()
 
@@ -159,17 +162,32 @@ def main():
 
         # If branch is master Copy v1.0 results from S3
         if branch_name == "master":
-            subprocess.run(
-                [
-                    "aws",
-                    "s3",
-                    "cp",
-                    "--recursive",
-                    f"s3://autogluon-ci-benchmark/version_1.0/cleaned/{module_name}/",
-                    "./results",
-                ],
-                check=True
-            )
+
+            if benchmark_type == "tabular*" or benchmark_type == "timeseries*":
+                subprocess.run(
+                    [
+                        "aws",
+                        "s3",
+                        "cp",
+                        "--recursive",
+                        f"s3://autogluon-ci-benchmark/version_1.0/cleaned/{module_name}/",
+                        "./results",
+                    ],
+                    check=True,
+                )
+            else:
+                subprocess.run(
+                    [
+                        "aws",
+                        "s3",
+                        "cp",
+                        "--recursive",
+                        f"s3://autogluon-ci-benchmark/version_1.0/cleaned/{module_name}/{benchmark_type}/",
+                        "./results",
+                    ],
+                    check=True,
+                )
+
 
             # Call process_results()
             df = process_results(eval_flag=True)

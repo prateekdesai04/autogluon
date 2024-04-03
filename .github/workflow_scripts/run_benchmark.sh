@@ -34,7 +34,7 @@ if [ $BRANCH_OR_PR_NUMBER != "master" ]; then
     fi
 fi
 
-python CI/bench/evaluate.py --config_path ./ag_bench_runs/$MODULE/ --module_name $MODULE --time_limit $TIME_LIMIT --branch_name $BRANCH_OR_PR_NUMBER
+python CI/bench/evaluate.py --config_path ./ag_bench_runs/$MODULE/ --module_name $MODULE --time_limit $TIME_LIMIT --branch_name $BRANCH_OR_PR_NUMBER --benchmark_type $BENCHMARK
 
 for file in ./results/*; do
     CLEANED_PATH="s3://autogluon-ci-benchmark/cleaned/$MODULE"
