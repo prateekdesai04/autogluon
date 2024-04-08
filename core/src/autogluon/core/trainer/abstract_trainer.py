@@ -80,8 +80,68 @@ logger = logging.getLogger(__name__)
 
 # TODO: Dynamic model loading for ensemble models during prediction, only load more models if prediction is uncertain. This dynamically reduces inference time.
 # TODO: Try midstack Semi-Supervised. Just take final models and re-train them, use bagged preds for SS rows. This would be very cheap and easy to try.
-# TODO: Move to autogluon.core
 class AbstractTrainer:
+    """
+    AbstractTrainer contains logic to train a variety of models under a variety of constraints and automatically generate a multi-layer stack ensemble.
+    Beyond the basic functionality, it also has support for model refitting, distillation, pseudo-labelling, unlabeled data, and much more.
+
+    It is not recommended to directly use Trainer. Instead, use Predictor or Learner which internally uses Trainer.
+    This documentation is for developers. Users should avoid this class.
+
+    Due to the complexity of the logic within this class, a text description will not give the full picture.
+    It is recommended to carefully read the code and use a debugger to understand how it works.
+
+    AbstractTrainer makes much fewer assumptions about the problem than Learner and Predictor.
+    It expects these ambiguities to have already been resolved upstream. For example, problem_type, feature_metadata, num_classes, etc.
+
+    Parameters
+    ----------
+    path : str
+        Path to save and load trainer artifacts to disk.
+        Path should end in `/` or `os.path.sep()`.
+    problem_type : str
+        One of ['binary', 'multiclass', 'regression', 'quantile', 'softclass']
+    num_classes : int
+        The number of classes in the problem.
+        If problem_type is in ['regression', 'quantile'], this must be None.
+        If problem_type is 'binary', this must be 2.
+        If problem_type is in ['multiclass', 'softclass'], this must be >= 2.
+    feature_metadata : FeatureMetadata
+        FeatureMetadata for X. Sent to each model during fit.
+    eval_metric : Scorer, default = None
+        Metric to optimize. If None, a default metric is used depending on the problem_type.
+    quantile_levels : List[float] | np.ndarray, default = None
+        # TODO: Add documentation, not documented in Predictor.
+        Only used when problem_type=quantile
+    low_memory : bool, default = True
+        Deprecated parameter, likely to be removed in future versions.
+        If True, caches models to disk separately instead of containing all models within memory.
+        If False, may cause a variety of bugs.
+    k_fold : int, default = 0
+        If <2, then non-bagged mode is used.
+        If >= 2, then bagged mode is used with num_bag_folds == k_fold for each model.
+        Bagged mode changes the way models are trained and ensembled.
+        Bagged mode enables multi-layer stacking and repeated bagging.
+    n_repeats : int, default = 1
+        The maximum repeats of bagging to do when in bagged mode.
+        Larger values take linearly longer to train and infer, but improves quality slightly.
+    sample_weight : str, default = None
+        Column name of the sample weight in X
+    weight_evaluation : bool, default = False
+        If True, the eval_metric is calculated with sample_weight incorporated into the score.
+    save_data : bool, default = True
+        Whether to cache the data (X, y, X_val, y_val) to disk.
+        Required for a variety of advanced post-fit functionality.
+        It is recommended to keep as True.
+    random_state : int, default = 0
+        Random state for data splitting in bagged mode.
+    verbosity : int, default = 2
+        Verbosity levels range from 0 to 4 and control how much information is printed.
+        Higher levels correspond to more detailed print statements (you can set verbosity = 0 to suppress warnings).
+        If using logging, you can alternatively control amount of information printed via `logger.setLevel(L)`,
+        where `L` ranges from 0 to 50 (Note: higher values of `L` correspond to fewer print statements, opposite of verbosity levels).
+    """
+
     trainer_file_name = "trainer.pkl"
     trainer_info_name = "info.pkl"
     trainer_info_json_name = "info.json"
@@ -90,20 +150,23 @@ class AbstractTrainer:
     def __init__(
         self,
         path: str,
+        *,
         problem_type: str,
-        eval_metric=None,
-        num_classes=None,
-        quantile_levels=None,
-        low_memory=False,
-        feature_metadata=None,
-        k_fold=0,
-        n_repeats=1,
-        sample_weight=None,
-        weight_evaluation=False,
-        save_data=False,
-        random_state=0,
-        verbosity=2,
+        num_classes: int = None,
+        feature_metadata: FeatureMetadata = None,
+        eval_metric: Scorer = None,
+        quantile_levels: List[float] | np.ndarray = None,
+        low_memory: bool = True,
+        k_fold: int = 0,
+        n_repeats: int = 1,
+        sample_weight: str = None,
+        weight_evaluation: bool = False,
+        save_data: bool = False,
+        random_state: int = 0,
+        verbosity: int = 2,
     ):
+        self._validate_num_classes(num_classes=num_classes, problem_type=problem_type)
+        self._validate_quantile_levels(quantile_levels=quantile_levels, problem_type=problem_type)
         self.path = path
         self.problem_type = problem_type
         self.feature_metadata = feature_metadata
@@ -1290,15 +1353,7 @@ class AbstractTrainer:
                     else:
                         can_refit_full = model._get_tags().get("can_refit_full", False)
                     reuse_first_fold = not can_refit_full
-                if reuse_first_fold:
-                    # Perform fallback black-box refit logic that doesn't retrain.
-                    model_full = model.convert_to_refit_full_via_copy()
-                    # FIXME: validation time not correct for infer 1 batch time, needed to hack _is_refit=True to fix
-                    logger.log(20, f"Fitting model: {model_full.name} | Skipping fit via cloning parent ...")
-                    self._add_model(model_full, stack_name=REFIT_FULL_NAME, level=level, _is_refit=True)
-                    self.save_model(model_full)
-                    models_trained = [model_full.name]
-                else:
+                if not reuse_first_fold:
                     model_full = model.convert_to_refit_full_template()
                     # Mitigates situation where bagged models barely had enough memory and refit requires more. Worst case results in OOM, but this lowers chance of failure.
                     model_full._user_params_aux["max_memory_usage_ratio"] = model.params_aux["max_memory_usage_ratio"] * 1.15
@@ -1326,6 +1381,30 @@ class AbstractTrainer:
                         refit_full=True,
                         **kwargs,
                     )
+                    if len(models_trained) == 0:
+                        reuse_first_fold = True
+                        logger.log(
+                            30,
+                            f"WARNING: Refit training failure detected for '{model_name}'... "
+                            f"Falling back to using first fold to avoid downstream exception."
+                            f"\n\tThis is likely due to an out-of-memory error or other memory related issue. "
+                            f"\n\tPlease create a GitHub issue if this was triggered from a non-memory related problem.",
+                        )
+                        if not model.params.get("save_bag_folds", True):
+                            raise AssertionError(
+                                f"Cannot avoid training failure during refit for '{model_name}' by falling back to "
+                                f"copying the first fold because it does not exist! (save_bag_folds=False)"
+                                f"\n\tPlease specify `save_bag_folds=True` in the `.fit` call to avoid this exception."
+                            )
+
+                if reuse_first_fold:
+                    # Perform fallback black-box refit logic that doesn't retrain.
+                    model_full = model.convert_to_refit_full_via_copy()
+                    # FIXME: validation time not correct for infer 1 batch time, needed to hack _is_refit=True to fix
+                    logger.log(20, f"Fitting model: {model_full.name} | Skipping fit via cloning parent ...")
+                    self._add_model(model_full, stack_name=REFIT_FULL_NAME, level=level, _is_refit=True)
+                    self.save_model(model_full)
+                    models_trained = [model_full.name]
                 if len(models_trained) == 1:
                     model_refit_map[model_name] = models_trained[0]
                 for model_trained in models_trained:
@@ -3759,6 +3838,7 @@ class AbstractTrainer:
         weights=None,
         decision_thresholds: int | List[float] = 50,
         verbose: bool = True,
+        **kwargs,
     ) -> float:
         # TODO: Docstring
         assert self.problem_type == BINARY, f'calibrate_decision_threshold is only available for `problem_type="{BINARY}"`'
@@ -3817,4 +3897,25 @@ class AbstractTrainer:
             decision_thresholds=decision_thresholds,
             metric_name=metric.name,
             verbose=verbose,
+            **kwargs,
         )
+
+    @staticmethod
+    def _validate_num_classes(num_classes: int, problem_type: str):
+        if problem_type == BINARY:
+            assert num_classes is not None and num_classes == 2, f"num_classes must be 2 when problem_type='{problem_type}' (num_classes={num_classes})"
+        elif problem_type in [MULTICLASS, SOFTCLASS]:
+            assert num_classes is not None and num_classes >= 2, f"num_classes must be >=2 when problem_type='{problem_type}' (num_classes={num_classes})"
+        elif problem_type in [REGRESSION, QUANTILE]:
+            assert num_classes is None, f"num_clases must be None when problem_type='{problem_type}' (num_classes={num_classes})"
+        else:
+            raise AssertionError(f"Unknown problem_type: '{problem_type}'. Valid problem types: {[BINARY, MULTICLASS, REGRESSION, SOFTCLASS, QUANTILE]}")
+
+    @staticmethod
+    def _validate_quantile_levels(quantile_levels: List[float] | np.array, problem_type: str):
+        if problem_type == QUANTILE:
+            assert quantile_levels is not None, f"quantile_levels must not be None when problem_type='{problem_type}' (quantile_levels={quantile_levels})"
+            assert isinstance(quantile_levels, (list, np.ndarray)), f"quantile_levels must be a list or np.ndarray (quantile_levels={quantile_levels})"
+            assert len(quantile_levels) > 0, f"quantile_levels must not be an empty list (quantile_levels={quantile_levels})"
+        else:
+            assert quantile_levels is None, f"quantile_levels must be None when problem_type='{problem_type}' (quantile_levels={quantile_levels})"

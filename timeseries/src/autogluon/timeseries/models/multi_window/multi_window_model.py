@@ -58,6 +58,18 @@ class MultiWindowBacktestingModel(AbstractTimeSeriesModel):
         self.most_recent_model_folder: Optional[str] = None
         super().__init__(**kwargs)
 
+    @property
+    def supports_static_features(self) -> bool:
+        return self.model_base_type.supports_static_features
+
+    @property
+    def supports_known_covariates(self) -> bool:
+        return self.model_base_type.supports_known_covariates
+
+    @property
+    def supports_past_covariates(self) -> bool:
+        return self.model_base_type.supports_past_covariates
+
     def _get_model_base(self):
         return self.model_base
 
@@ -243,4 +255,6 @@ class MultiWindowBacktestingModel(AbstractTimeSeriesModel):
         return refit_model
 
     def _more_tags(self) -> dict:
-        return self.most_recent_model._get_tags()
+        tags = self.model_base._get_tags()
+        tags["can_use_val_data"] = False
+        return tags

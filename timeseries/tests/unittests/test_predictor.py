@@ -24,10 +24,12 @@ from autogluon.timeseries.models.ensemble.greedy_ensemble import TimeSeriesGreed
 from autogluon.timeseries.predictor import TimeSeriesPredictor
 
 from .common import (
+    DATAFRAME_WITH_COVARIATES,
     DUMMY_TS_DATAFRAME,
     PREDICTIONS_FOR_DUMMY_TS_DATAFRAME,
     CustomMetric,
     get_data_frame_with_variable_lengths,
+    get_static_features,
 )
 
 TEST_HYPERPARAMETER_SETTINGS = [
@@ -217,8 +219,8 @@ def test_given_hyperparameters_when_predictor_called_and_loaded_back_then_all_mo
 @pytest.mark.parametrize(
     "hyperparameters",
     [
-        {"ETS": {"maxiter": 1}, "SimpleFeedForward": {"epochs": 1}},
-        {"ETS": {"maxiter": 1}, "SimpleFeedForward": {"epochs": space.Int(1, 3)}},
+        {"Naive": {"maxiter": 1}, "SimpleFeedForward": {"epochs": 1}},
+        {"Naive": {"maxiter": 1}, "SimpleFeedForward": {"epochs": space.Int(1, 3)}},
     ],
 )
 def test_given_hp_spaces_and_custom_target_when_predictor_called_predictor_can_predict(
@@ -474,7 +476,7 @@ def test_when_predictor_is_loaded_then_info_works(temp_model_path):
 
 def test_when_train_data_contains_nans_then_predictor_can_fit(temp_model_path):
     predictor = TimeSeriesPredictor(path=temp_model_path)
-    df = DUMMY_TS_DATAFRAME.copy()
+    df = DATAFRAME_WITH_COVARIATES.copy()
     df.iloc[5] = np.nan
     predictor.fit(
         df,
@@ -486,23 +488,42 @@ def test_when_train_data_contains_nans_then_predictor_can_fit(temp_model_path):
 def test_when_prediction_data_contains_nans_then_predictor_can_predict(temp_model_path):
     predictor = TimeSeriesPredictor(path=temp_model_path)
     predictor.fit(DUMMY_TS_DATAFRAME, hyperparameters={"Naive": {}})
-    df = DUMMY_TS_DATAFRAME.copy()
+    df = DATAFRAME_WITH_COVARIATES.copy()
     df.iloc[5] = np.nan
     predictions = predictor.predict(df)
     assert isinstance(predictions, TimeSeriesDataFrame)
     assert not np.any(np.isnan(predictions))
 
 
-def test_when_some_time_series_contain_only_nans_then_exception_is_raised(temp_model_path):
+def test_when_some_train_time_series_contain_only_nans_then_they_are_removed_from_train_data(temp_model_path):
     predictor = TimeSeriesPredictor(path=temp_model_path)
-    df = TimeSeriesDataFrame.from_iterable_dataset(
+    train_data = TimeSeriesDataFrame.from_iterable_dataset(
         [
-            {"target": [float(5)] * 10, "start": pd.Period("2020-01-01", "D")},
             {"target": [float("nan")] * 10, "start": pd.Period("2020-01-01", "D")},
+            {"target": [float(5)] * 10, "start": pd.Period("2020-01-01", "D")},
         ]
     )
-    with pytest.raises(ValueError, match="consist completely of NaN values"):
-        predictor._check_and_prepare_data_frame(df)
+    with mock.patch("autogluon.timeseries.learner.TimeSeriesLearner.fit") as mock_learner_fit:
+        predictor.fit(train_data)
+        learner_train_data = mock_learner_fit.call_args[1]["train_data"]
+        assert all(learner_train_data.item_ids == [1])
+
+
+def test_when_all_train_time_series_contain_only_nans_then_exception_is_raised(temp_model_path):
+    predictor = TimeSeriesPredictor(path=temp_model_path)
+    train_data = DUMMY_TS_DATAFRAME.copy()
+    train_data["target"] = float("nan")
+    with pytest.raises(ValueError, match="At least some time series in train"):
+        predictor.fit(train_data)
+
+
+def test_when_all_nan_data_passed_to_predict_then_predictor_can_predict(temp_model_path):
+    predictor = TimeSeriesPredictor(path=temp_model_path, prediction_length=3)
+    predictor.fit(DUMMY_TS_DATAFRAME, hyperparameters=DUMMY_HYPERPARAMETERS)
+    data = DUMMY_TS_DATAFRAME.copy()
+    data["target"] = float("nan")
+    predictions = predictor.predict(data)
+    assert not predictions.isna().any(axis=None) and all(predictions.item_ids == data.item_ids)
 
 
 @pytest.mark.parametrize("method", ["evaluate", "leaderboard"])
@@ -536,7 +557,6 @@ def test_given_data_is_in_dataframe_format_then_predictor_works(temp_model_path)
 @pytest.mark.parametrize("path_format", [str, Path])
 def test_given_data_is_in_str_format_then_predictor_works(temp_model_path, tmp_path, path_format):
     df = pd.DataFrame(DUMMY_TS_DATAFRAME.reset_index())
-
     tmp_path_subdir = tmp_path / str(uuid4())[:4]
     data_path = path_format(str(tmp_path_subdir))
 
@@ -907,7 +927,7 @@ def test_given_only_short_series_in_train_data_when_fit_called_then_exception_is
         "short_series_3": 2,
     }
     data = get_data_frame_with_variable_lengths(item_id_to_length, freq="H")
-    with pytest.raises(ValueError, match="At least some time series in train\_data must have length"):
+    with pytest.raises(ValueError, match="Please provide longer time series as train"):
         predictor.fit(data, num_val_windows=num_val_windows, val_step_size=val_step_size)
 
 
@@ -925,7 +945,7 @@ def test_given_only_short_series_in_train_data_then_exception_is_raised(
         "short_series_3": 2,
     }
     data = get_data_frame_with_variable_lengths(item_id_to_length, freq="H")
-    with pytest.raises(ValueError, match="At least some time series in train\_data must have length"):
+    with pytest.raises(ValueError, match="Please provide longer time series as train"):
         predictor.fit(data, num_val_windows=num_val_windows, hyperparameters=TEST_HYPERPARAMETER_SETTINGS[0])
 
 
@@ -1069,7 +1089,13 @@ def test_when_log_file_set_then_predictor_logs_to_custom_file(temp_model_path):
             log_text = f.read()
         assert "Naive" in log_text
     finally:
-        log_path.unlink(missing_ok=True)
+        try:
+            log_path.unlink(missing_ok=True)
+        except PermissionError:
+            # Windows won't allow to clean up the directory if logs are saved to it;
+            # Permission Error: The process can't access the file since it is being used by another process
+            # skip deletion
+            pass
 
 
 def test_when_log_file_set_with_pathlib_then_predictor_logs_to_custom_file(temp_model_path):
@@ -1084,7 +1110,13 @@ def test_when_log_file_set_with_pathlib_then_predictor_logs_to_custom_file(temp_
             log_text = f.read()
         assert "Naive" in log_text
     finally:
-        log_path.unlink(missing_ok=True)
+        try:
+            log_path.unlink(missing_ok=True)
+        except PermissionError:
+            # Windows won't allow to clean up the directory if logs are saved to it;
+            # Permission Error: The process can't access the file since it is being used by another process
+            # skip deletion
+            pass
 
 
 def test_when_log_to_file_set_to_false_then_predictor_does_not_log_to_file(temp_model_path):
@@ -1538,3 +1570,191 @@ def test_given_multiple_models_with_ensemble_when_single_model_persisted_then_si
 
     predictor.unpersist()
     assert len(predictor._learner.load_trainer().models) == 0
+
+
+@pytest.fixture(
+    scope="session",
+    params=[
+        {"A": 10, "B": 15},
+        {"A": 10, "C": 20, "B": 5},
+        {"A": 10, "C": 10, "B": 10},
+    ],
+)
+def importance_dataset_and_predictors(request, tmp_path_factory):
+    item_id_to_length = request.param
+
+    df = get_data_frame_with_variable_lengths(
+        item_id_to_length,
+        static_features=get_static_features(item_id_to_length.keys(), ["feat1", "feat2", "feat3"]),
+        covariates_names=["cov1", "cov2", "cov3"],
+    )
+
+    prediction_length = 2
+    df_train = df.slice_by_timestep(None, -prediction_length)
+
+    hyperparameter_map = {
+        "no_features": {"Naive": {}},
+        "known_and_categorical_only": {"DeepAR": {"epochs": 1}},
+        "all_features": {"TemporalFusionTransformer": {"epochs": 1}},
+    }
+
+    predictors = {}
+
+    for name, hyperparameters in hyperparameter_map.items():
+        predictor = TimeSeriesPredictor(
+            path=tmp_path_factory.mktemp(str(uuid4())[:6]),
+            prediction_length=prediction_length,
+            eval_metric="MAPE",
+            known_covariates_names=["cov1", "cov2"],  # cov3 is past covariate
+        )
+        predictor.fit(
+            df_train,
+            hyperparameters=hyperparameters,
+            enable_ensemble=False,
+        )
+        predictors[name] = predictor
+
+    return df_train, predictors
+
+
+@pytest.mark.parametrize("num_iterations", [1, 2, 5])
+@pytest.mark.parametrize("relative_scores", [True, False])
+@pytest.mark.parametrize("method", ["naive", "permutation"])
+@pytest.mark.parametrize(
+    "features, scores_returned, expected_absolute_importances",
+    [
+        (["cov1"], [-0.22, -0.26], [0.04]),
+        (["cov2"], [-0.22, -0.26], [0.04]),
+        (["cov1", "cov2"], [-0.22, -0.26, -0.30], [0.04, 0.08]),
+        (["cov1", "feat1"], [-0.22, -0.26, -0.30], [0.04, 0.08]),
+        (
+            None,  # all features
+            [-0.22, -0.26, -0.30, -0.20, -0.27, -0.29, -0.19],
+            [0.04, 0.08, -0.02, 0.05, 0.07, -0.03],
+        ),
+    ],
+)
+def test_when_feature_importance_called_with_improvements_then_improvements_are_correct(
+    num_iterations,
+    relative_scores,
+    method,
+    features,
+    scores_returned,
+    expected_absolute_importances,
+    importance_dataset_and_predictors,
+):
+    df_train, predictors = importance_dataset_and_predictors
+    predictor = predictors["all_features"]
+
+    with mock.patch(
+        "autogluon.timeseries.trainer.abstract_trainer.AbstractTimeSeriesTrainer.evaluate"
+    ) as mock_evaluate:
+        mock_evaluate.side_effect = [{"MAPE": v} for v in scores_returned] * num_iterations  # baseline, feature
+
+        feature_importance = predictor.feature_importance(
+            df_train,
+            num_iterations=num_iterations,
+            method=method,
+            features=features,
+            relative_scores=relative_scores,
+        )
+        expected_score = np.array(expected_absolute_importances)
+        if relative_scores:
+            expected_score /= 0.22
+
+        assert mock_evaluate.call_count == len(scores_returned) * (num_iterations if method == "permutation" else 1)
+        assert np.allclose(feature_importance["importance"], expected_score, atol=1e-3)
+
+
+@pytest.mark.parametrize("num_iterations", [1, 2, 5])
+@pytest.mark.parametrize("relative_scores", [True, False])
+@pytest.mark.parametrize("method", ["naive", "permutation"])
+@pytest.mark.parametrize(
+    "features, scores_returned",
+    [
+        (["cov1"], [-0.22, -0.26]),
+        (["cov2"], [-0.22, -0.26]),
+        (["cov1", "cov2"], [-0.22, -0.26, -0.30]),
+        (["cov1", "feat1"], [-0.22, -0.26, -0.30]),
+        (
+            None,  # all features
+            [-0.22, -0.26, -0.30, -0.20, -0.27, -0.29, -0.19],
+        ),
+    ],
+)
+def test_given_predictor_takes_no_features_when_feature_importance_called_with_improvements_then_improvements_are_zero(
+    num_iterations,
+    relative_scores,
+    method,
+    features,
+    scores_returned,
+    importance_dataset_and_predictors,
+):
+    df_train, predictors = importance_dataset_and_predictors
+    predictor = predictors["no_features"]
+
+    with mock.patch(
+        "autogluon.timeseries.trainer.abstract_trainer.AbstractTimeSeriesTrainer.evaluate"
+    ) as mock_evaluate:
+        mock_evaluate.side_effect = [
+            {"MAPE": v} for v in scores_returned
+        ] * num_iterations  # baseline, feature taken out
+
+        feature_importance = predictor.feature_importance(
+            df_train,
+            num_iterations=num_iterations,
+            method=method,
+            features=features,
+            relative_scores=relative_scores,
+        )
+
+        assert np.allclose(feature_importance["importance"], 0, atol=1e-8)
+
+
+@pytest.mark.parametrize("num_iterations", [1, 2, 5])
+@pytest.mark.parametrize("relative_scores", [True, False])
+@pytest.mark.parametrize("method", ["naive", "permutation"])
+@pytest.mark.parametrize(
+    "features, scores_returned",
+    [
+        (["cov1"], [-0.22, -0.26]),
+        (["cov2"], [-0.22, -0.26]),
+        (["cov1", "cov2"], [-0.22, -0.26, -0.30]),
+        (["cov1", "feat1"], [-0.22, -0.26, -0.30]),
+        (
+            None,  # all features
+            [-0.22, -0.26, -0.30, -0.20, -0.27, -0.29, -0.19],
+        ),
+    ],
+)
+def test_given_predictor_takes_known_only_when_feature_importance_called_with_improvements_then_past_and_static_improvements_are_zero(
+    num_iterations,
+    relative_scores,
+    method,
+    features,
+    scores_returned,
+    importance_dataset_and_predictors,
+):
+    df_train, predictors = importance_dataset_and_predictors
+    predictor = predictors["no_features"]
+
+    with mock.patch(
+        "autogluon.timeseries.trainer.abstract_trainer.AbstractTimeSeriesTrainer.evaluate"
+    ) as mock_evaluate:
+        mock_evaluate.side_effect = [
+            {"MAPE": v} for v in scores_returned
+        ] * num_iterations  # baseline, feature taken out
+
+        feature_importance = predictor.feature_importance(
+            df_train,
+            num_iterations=num_iterations,
+            method=method,
+            features=features,
+            relative_scores=relative_scores,
+        )
+
+        for i, importance in feature_importance["importance"].items():
+            if i in ["feat1", "feat2", "feat3", "cov3"]:
+                assert np.allclose(importance, 0, atol=1e-8)
+            else:
+                assert np.isfinite(importance)

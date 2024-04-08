@@ -276,7 +276,7 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
         data: Union[TimeSeriesDataFrame, pd.DataFrame, Path, str],
         name: str = "data",
     ) -> TimeSeriesDataFrame:
-        """Ensure that TimeSeriesDataFrame has a sorted index, valid frequency, and contains no missing values.
+        """Ensure that TimeSeriesDataFrame has a sorted index and a valid frequency.
 
         If self.freq is None, then self.freq of the predictor will be set to the frequency of the data.
 
@@ -314,18 +314,6 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
             if df.freq != self.freq:
                 logger.warning(f"{name} with frequency '{df.freq}' has been resampled to frequency '{self.freq}'.")
                 df = df.convert_frequency(freq=self.freq)
-
-        # Fill missing values
-        if df.isna().values.any():
-            # FIXME: Do not automatically fill NaNs here, handle missing values at the level of individual models.
-            # FIXME: Current solution leads to incorrect metric computation if missing values are present
-            logger.warning(
-                f"{name} contains missing values represented by NaN. "
-                f"They have been filled by carrying forward the last valid observation."
-            )
-            df = df.fill_missing_values()
-            if df.isna().values.any():
-                raise ValueError(f"Some time series in {name} consist completely of NaN values. Please remove them.")
         return df
 
     def _check_data_for_evaluation(self, data: TimeSeriesDataFrame, name: str = "data"):
@@ -337,15 +325,19 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
                 f"all time series have length > prediction_length (at least {self.prediction_length + 1})"
             )
 
-    @staticmethod
-    def _get_dataset_stats(data: TimeSeriesDataFrame) -> str:
+    def _get_dataset_stats(self, data: TimeSeriesDataFrame) -> str:
         ts_lengths = data.num_timesteps_per_item()
-        median_length = int(ts_lengths.median())
+        median_length = ts_lengths.median()
         min_length = ts_lengths.min()
         max_length = ts_lengths.max()
+        missing_value_fraction = data[self.target].isna().mean()
+        if missing_value_fraction > 0:
+            missing_value_fraction_str = f" (NaN fraction={missing_value_fraction:.1%})"
+        else:
+            missing_value_fraction_str = ""
         return (
-            f"{len(data)} rows, {data.num_items} time series. "
-            f"Median time series length is {median_length} (min={min_length}, max={max_length}). "
+            f"{len(data)} rows{missing_value_fraction_str}, {data.num_items} time series. "
+            f"Median time series length is {median_length:.0f} (min={min_length}, max={max_length}). "
         )
 
     def _reduce_num_val_windows_if_necessary(
@@ -374,41 +366,45 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
             )
         return new_num_val_windows
 
-    def _filter_short_series(
+    def _filter_useless_train_data(
         self,
         train_data: TimeSeriesDataFrame,
         num_val_windows: int,
         val_step_size: int,
     ) -> Tuple[TimeSeriesDataFrame, Optional[TimeSeriesDataFrame]]:
-        """Remove time series from train_data that are too short for chosen prediction_length and validation settings.
+        """Remove time series from train_data that either contain all NaNs or are too short for chosen settings.
 
-        This method ensures that for each validation fold, all train series have length >= max(prediction_length + 1, 5).
+        This method ensures that 1) no time series consist of all NaN values and 2) for each validation fold, all train
+        series have length >= max(prediction_length + 1, 5).
 
-        In other words, this method removes from train_data all time series with length less than
+        In other words, this method removes from train_data all time series with only NaN values or length less than
         min_train_length + prediction_length + (num_val_windows - 1) * val_step_size
         """
         min_length = self._min_train_length + self.prediction_length + (num_val_windows - 1) * val_step_size
-
         train_lengths = train_data.num_timesteps_per_item()
-        train_items_to_drop = train_lengths.index[train_lengths < min_length]
-        if len(train_items_to_drop) > 0:
+        too_short_items = train_lengths.index[train_lengths < min_length]
+
+        if len(too_short_items) > 0:
             logger.info(
-                f"\tRemoving {len(train_items_to_drop)} short time series from train_data. Only series with length "
+                f"\tRemoving {len(too_short_items)} short time series from train_data. Only series with length "
                 f">= {min_length} will be used for training."
             )
-            filtered_train_data = train_data.query("item_id not in @train_items_to_drop")
-            if len(filtered_train_data) == 0:
-                raise ValueError(
-                    f"At least some time series in train_data must have length >= {min_length}. Please provide longer "
-                    f"time series as train_data or reduce prediction_length, num_val_windows, or val_step_size."
-                )
-            logger.info(
-                f"\tAfter removing short series, train_data has {self._get_dataset_stats(filtered_train_data)}"
-            )
-        else:
-            filtered_train_data = train_data
+            train_data = train_data.query("item_id not in @too_short_items")
 
-        return filtered_train_data
+        all_nan_items = train_data.item_ids[train_data[self.target].isna().groupby(ITEMID, sort=False).all()]
+        if len(all_nan_items) > 0:
+            logger.info(f"\tRemoving {len(all_nan_items)} time series consisting of only NaN values from train_data.")
+            train_data = train_data.query("item_id not in @all_nan_items")
+
+        if len(too_short_items) or len(all_nan_items):
+            logger.info(f"\tAfter filtering, train_data has {self._get_dataset_stats(train_data)}")
+
+        if len(train_data) == 0:
+            raise ValueError(
+                f"At least some time series in train_data must have >= {min_length} observations. Please provide "
+                f"longer time series as train_data or reduce prediction_length, num_val_windows, or val_step_size."
+            )
+        return train_data
 
     @apply_presets(TIMESERIES_PRESETS_CONFIGS)
     def fit(
@@ -455,8 +451,8 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
 
                 data.static_features["store_id"] = data.static_features["store_id"].astype("category")
 
-            If provided data is an instance of pandas DataFrame, AutoGluon will attempt to automatically convert it
-            to a ``TimeSeriesDataFrame``.
+            If provided data is a path or a pandas.DataFrame, AutoGluon will attempt to automatically convert it to a
+            ``TimeSeriesDataFrame``.
 
         tuning_data : Union[TimeSeriesDataFrame, pd.DataFrame, Path, str], optional
             Data reserved for model selection and hyperparameter tuning, rather than training individual models. Also
@@ -476,8 +472,8 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
             If ``train_data`` has past covariates or static features, ``tuning_data`` must have also include them (with
             same columns names and dtypes).
 
-            If provided data is an instance of pandas DataFrame, AutoGluon will attempt to automatically convert it
-            to a ``TimeSeriesDataFrame``.
+            If provided data is a path or a pandas.DataFrame, AutoGluon will attempt to automatically convert it to a
+            ``TimeSeriesDataFrame``.
 
         time_limit : int, optional
             Approximately how long :meth:`~autogluon.timeseries.TimeSeriesPredictor.fit` will run (wall-clock time in
@@ -574,7 +570,7 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
             Valid preset values:
 
             * "auto": Performs HPO via bayesian optimization search on GluonTS-backed neural forecasting models and
-                random search on other models using local scheduler.
+              random search on other models using local scheduler.
             * "random": Performs HPO via random search.
 
             You can also provide a dict to specify searchers and schedulers
@@ -722,7 +718,7 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
             raise ValueError("Please set num_val_windows >= 1 or provide custom tuning_data")
 
         if not skip_model_selection:
-            train_data = self._filter_short_series(
+            train_data = self._filter_useless_train_data(
                 train_data, num_val_windows=num_val_windows, val_step_size=val_step_size
             )
 
@@ -859,8 +855,11 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
         Parameters
         ----------
         data : Union[TimeSeriesDataFrame, pd.DataFrame, Path, str]
-            The data to evaluate the best model on. The last ``prediction_length`` time steps of the data set, for each
-            item, will be held out for prediction and forecast accuracy will be calculated on these time steps.
+            The data to evaluate the best model on. The last ``prediction_length`` time steps of each time series in
+            ``data`` will be held out for prediction and forecast accuracy will be calculated on these time steps.
+
+            Must include both historic and future data (i.e., length of all time series in ``data`` must be at least
+            ``prediction_length + 1``).
 
             If ``known_covariates_names`` were specified when creating the predictor, ``data`` must include the columns
             listed in ``known_covariates_names`` with the covariates values aligned with the target time series.
@@ -896,6 +895,137 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
             logger.info("Evaluations on test data:")
             logger.info(json.dumps(scores_dict, indent=4))
         return scores_dict
+
+    def feature_importance(
+        self,
+        data: Optional[Union[TimeSeriesDataFrame, pd.DataFrame, Path, str]] = None,
+        model: Optional[str] = None,
+        metric: Optional[Union[str, TimeSeriesScorer]] = None,
+        features: Optional[List[str]] = None,
+        time_limit: Optional[float] = None,
+        method: Literal["naive", "permutation"] = "permutation",
+        subsample_size: int = 50,
+        num_iterations: Optional[int] = None,
+        random_seed: Optional[int] = 123,
+        relative_scores: bool = False,
+        include_confidence_band: bool = True,
+        confidence_level: float = 0.99,
+    ):
+        """
+        Calculates feature importance scores for the given model via replacing each feature by a shuffled version of the same feature
+        (also known as permutation feature importance) or by assigning a constant value representing the median or mode of the feature,
+        and computing the relative decrease in the model's predictive performance.
+
+        A feature's importance score represents the performance drop that results when the model makes predictions on a perturbed copy
+        of the data where this feature's values have been randomly shuffled across rows. A feature score of 0.01 would indicate that the
+        predictive performance dropped by 0.01 when the feature was randomly shuffled or replaced. The higher the score a feature has,
+        the more important it is to the model's performance.
+
+        If a feature has a negative score, this means that the feature is likely harmful to the final model, and a model trained with
+        the feature removed would be expected to achieve a better predictive performance. Note that calculating feature importance can
+        be a computationally expensive process, particularly if the model uses many features. In many cases, this can take longer than
+        the original model training. Roughly, this will equal to the number of features in the data multiplied by ``num_iterations``
+        (or, 1 when ``method="naive"``) and time taken when ``evaluate()`` is called on a dataset with ``subsample_size``.
+
+        Parameters
+        ----------
+        data : TimeSeriesDataFrame, pd.DataFrame, Path or str, optional
+            The data to evaluate feature importances on. The last ``prediction_length`` time steps of the data set, for each
+            item, will be held out for prediction and forecast accuracy will be calculated on these time steps.
+            More accurate feature importances will be obtained from new data that was held-out during ``fit()``.
+
+            If ``known_covariates_names`` were specified when creating the predictor, ``data`` must include the columns
+            listed in ``known_covariates_names`` with the covariates values aligned with the target time series.
+            This data must contain the label column with the same column name as specified during ``fit()``.
+
+            If ``train_data`` used to train the predictor contained past covariates or static features, then ``data``
+            must also include them (with same column names and dtypes).
+
+            If provided data is an instance of pandas DataFrame, AutoGluon will attempt to automatically convert it
+            to a ``TimeSeriesDataFrame``. If str or Path is passed, ``data`` will be loaded using the str value as the file path.
+
+            If ``data`` is not provided, then validation (tuning) data provided during training (or the held out data used for
+            validation if ``tuning_data`` was not explicitly provided ``fit()``) will be used.
+        model : str, optional
+            Name of the model that you would like to evaluate. By default, the best model during training
+            (with highest validation score) will be used.
+        metric : str or TimeSeriesScorer, optional
+            Metric to be used for computing feature importance. If None, the ``eval_metric`` specified during initialization of
+            the ``TimeSeriesPredictor`` will be used.
+        features : List[str], optional
+            List of feature names that feature importances are calculated for and returned. By default, all feature importances
+            will be returned.
+        method : {"permutation", "naive"}, default = "permutation"
+            Method to be used for computing feature importance.
+
+            * ``naive``: computes feature importance by replacing the values of each feature by a constant value and computing
+              feature importances as the relative improvement in the evaluation metric. The constant value is the median for
+              real-valued features and the mode for categorical features, for both covariates and static features, obtained from the
+              feature values in ``data`` provided.
+            * ``permutation``: computes feature importance by naively shuffling the values of the feature across different items
+              and time steps. Each feature is shuffled for ``num_iterations`` times and feature importances are computed as the
+              relative improvement in the evaluation metric. Refer to https://explained.ai/rf-importance/ for an explanation of
+              permutation importance.
+
+        subsample_size : int, default = 50
+            The number of items to sample from `data` when computing feature importance. Larger values increase the accuracy of
+            the feature importance scores. Runtime linearly scales with `subsample_size`.
+        time_limit : float, optional
+            Time in seconds to limit the calculation of feature importance. If None, feature importance will calculate without early stopping.
+            If ``method="permutation"``, a minimum of 1 full shuffle set will always be evaluated. If a shuffle set evaluation takes longer than
+            ``time_limit``, the method will take the length of a shuffle set evaluation to return regardless of the `time_limit`.
+        num_iterations : int, optional
+            The number of different iterations of the data that are evaluated. If ``method="permutation"``, this will be interpreted
+            as the number of shuffle sets (equivalent to ``num_shuffle_sets`` in :meth:`TabularPredictor.feature_importance`). If ``method="naive"``, the
+            constant replacement approach is repeated for ``num_iterations`` times, and a different subsample of data (of size ``subsample_size``) will
+            be taken in each iteration.
+            Default is 1 for ``method="naive"`` and 5 for ``method="permutation"``. The value will be ignored if ``method="naive"`` and the subsample
+            size is greater than the number of items in ``data`` as additional iterations will be redundant.
+            Larger values will increase the quality of the importance evaluation.
+            It is generally recommended to increase ``subsample_size`` before increasing ``num_iterations``.
+            Runtime scales linearly with ``num_iterations``.
+        random_seed : int or None, default = 123
+            If provided, fixes the seed of the random number generator for all models. This guarantees reproducible
+            results for feature importance.
+        relative_scores : bool, default = False
+            By default, this method will return expected average *absolute* improvement in the eval metric due to the feature. If True, then
+            the statistics will be computed over the *relative* (percentage) improvements.
+        include_confidence_band: bool, default = True
+            If True, returned DataFrame will include two additional columns specifying confidence interval for the true underlying importance value of
+            each feature. Increasing ``subsample_size`` and ``num_iterations`` will tighten the confidence interval.
+        confidence_level: float, default = 0.99
+            This argument is only considered when ``include_confidence_band=True``, and can be used to specify the confidence level used
+            for constructing confidence intervals. For example, if ``confidence_level`` is set to 0.99, then the returned DataFrame will include
+            columns ``p99_high`` and ``p99_low`` which indicates that the true feature importance will be between ``p99_high`` and ``p99_low`` 99% of
+            the time (99% confidence interval). More generally, if ``confidence_level`` = 0.XX, then the columns containing the XX% confidence interval
+            will be named ``pXX_high`` and ``pXX_low``.
+
+        Returns
+        -------
+        :class:`pd.DataFrame` of feature importance scores with 2 columns:
+            index: The feature name.
+            'importance': The estimated feature importance score.
+            'stddev': The standard deviation of the feature importance score. If NaN, then not enough ``num_iterations`` were used.
+        """
+        if data is not None:
+            data = self._check_and_prepare_data_frame(data)
+            self._check_data_for_evaluation(data)
+
+        fi_df = self._learner.get_feature_importance(
+            data=data,
+            model=model,
+            metric=metric,
+            features=features,
+            time_limit=time_limit,
+            method=method,
+            subsample_size=subsample_size,
+            num_iterations=num_iterations,
+            random_seed=random_seed,
+            relative_scores=relative_scores,
+            include_confidence_band=include_confidence_band,
+            confidence_level=confidence_level,
+        )
+        return fi_df
 
     @classmethod
     def _load_version_file(cls, path: str) -> str:
@@ -1052,8 +1182,8 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
         Parameters
         ----------
         data : Union[TimeSeriesDataFrame, pd.DataFrame, Path, str], optional
-            dataset used for additional evaluation. If not provided, the validation set used during training will be
-            used.
+            dataset used for additional evaluation. Must include both historic and future data (i.e., length of all
+            time series in ``data`` must be at least ``prediction_length + 1``).
 
             If ``known_covariates_names`` were specified when creating the predictor, ``data`` must include the columns
             listed in ``known_covariates_names`` with the covariates values aligned with the target time series.
@@ -1061,8 +1191,8 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
             If ``train_data`` used to train the predictor contained past covariates or static features, then ``data``
             must also include them (with same column names and dtypes).
 
-            If provided data is an instance of pandas DataFrame, AutoGluon will attempt to automatically convert it
-            to a ``TimeSeriesDataFrame``.
+            If provided data is a path or a pandas.DataFrame, AutoGluon will attempt to automatically convert it to a
+            ``TimeSeriesDataFrame``.
 
         display : bool, default = False
             If True, the leaderboard DataFrame will be printed.
@@ -1231,7 +1361,7 @@ class TimeSeriesPredictor(TimeSeriesPredictorDeprecatedMixin):
         }
 
         past_data, known_covariates = test_data.get_model_inputs_for_scoring(
-            prediction_length=self.prediction_length, known_covariates_names=trainer.metadata.known_covariates_real
+            prediction_length=self.prediction_length, known_covariates_names=trainer.metadata.known_covariates
         )
         pred_proba_dict_test: Dict[str, TimeSeriesDataFrame] = trainer.get_model_pred_dict(
             base_models, data=past_data, known_covariates=known_covariates
