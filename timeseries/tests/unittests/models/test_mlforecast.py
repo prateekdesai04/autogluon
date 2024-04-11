@@ -53,6 +53,7 @@ def test_when_covariates_and_features_present_then_train_and_val_dfs_have_correc
     expected_num_features = (
         len(lags)
         + len(known_covariates_names)
+        + len(model.metadata.known_covariates_real)  # item-normalized version of each real covariate
         + len(static_features_names)
         + len(model._date_features)
         + 2  # target, item_id

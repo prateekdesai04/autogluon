@@ -252,6 +252,11 @@ class AbstractMLForecastModel(AbstractTimeSeriesModel):
         if static_features is not None:
             df = pd.merge(df, static_features, how="left", on=ITEMID, suffixes=(None, "_static_feat"))
 
+        for col in self.metadata.known_covariates_real:
+            # Normalize non-boolean features using mean_abs scaling
+            if not df[col].isin([0, 1]).all():
+                df[f"__scaled_{col}"] = df[col] / df[col].abs().groupby(df[ITEMID]).mean().reindex(df[ITEMID]).values
+
         # We assume that df is sorted by 'unique_id' inside `TimeSeriesPredictor._check_and_prepare_data_frame`
         return df.rename(columns=column_name_mapping)
 
@@ -474,7 +479,7 @@ class DirectTabularModel(AbstractMLForecastModel):
         if known_covariates is not None:
             data_future = known_covariates.copy()
         else:
-            future_index = get_forecast_horizon_index_ts_dataframe(data, self.prediction_length)
+            future_index = get_forecast_horizon_index_ts_dataframe(data, self.prediction_length, freq=self.freq)
             data_future = pd.DataFrame(columns=[self.target], index=future_index, dtype="float32")
         # MLForecast raises exception of target contains NaN. We use inf as placeholder, replace them by NaN afterwards
         data_future[self.target] = float("inf")
@@ -606,7 +611,7 @@ class RecursiveTabularModel(AbstractMLForecastModel):
         if self._max_ts_length is not None:
             new_df = self._shorten_all_series(new_df, self._max_ts_length)
         if known_covariates is None:
-            future_index = get_forecast_horizon_index_ts_dataframe(data, self.prediction_length)
+            future_index = get_forecast_horizon_index_ts_dataframe(data, self.prediction_length, freq=self.freq)
             known_covariates = pd.DataFrame(columns=[self.target], index=future_index, dtype="float32")
         X_df = self._to_mlforecast_df(known_covariates, data.static_features, include_target=False)
         # If both covariates & static features are missing, set X_df = None to avoid exception from MLForecast
