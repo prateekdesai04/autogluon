@@ -250,7 +250,10 @@ jobs:
             brew unlink libomp
           fi
           brew install libomp.rb
+          brew link --overwrite libomp
           rm libomp.rb
+          echo 'export DYLD_LIBRARY_PATH="/opt/homebrew/opt/libomp/lib:$DYLD_LIBRARY_PATH"' >> ~/.bash_profile
+          source ~/.bash_profile
       - name: unit-test
         shell: bash -l {0}
         run: |
