@@ -40,7 +40,7 @@ def test_dump_timm_image():
 
 def test_dump_hf_text():
     model_dump_path = "./hf_text_test"
-    base_model_name = "huawei-noah/TinyBERT_General_4L_312D'"
+    base_model_name = "sshleifer/tiny-distilbert-base-uncased-finetuned-sst-2-english"
     dataset = ALL_DATASETS["ae"]
     predictor_1 = MultiModalPredictor(
         label=dataset.label_columns[0], problem_type=dataset.problem_type, eval_metric=dataset.metric
