@@ -12,6 +12,7 @@ from autogluon.timeseries.models.gluonts import (
     PatchTSTModel,
     SimpleFeedForwardModel,
     TemporalFusionTransformerModel,
+    TiDEModel,
     WaveNetModel,
 )
 from autogluon.timeseries.utils.features import TimeSeriesFeatureGenerator
@@ -19,8 +20,8 @@ from autogluon.timeseries.utils.features import TimeSeriesFeatureGenerator
 from ..common import DATAFRAME_WITH_COVARIATES, DATAFRAME_WITH_STATIC, DUMMY_TS_DATAFRAME
 from ..test_features import get_data_frame_with_covariates
 
-MODELS_WITH_STATIC_FEATURES = [DeepARModel, TemporalFusionTransformerModel, WaveNetModel]
-MODELS_WITH_KNOWN_COVARIATES = [DeepARModel, TemporalFusionTransformerModel, WaveNetModel]
+MODELS_WITH_STATIC_FEATURES = [DeepARModel, TemporalFusionTransformerModel, TiDEModel, WaveNetModel]
+MODELS_WITH_KNOWN_COVARIATES = [DeepARModel, TemporalFusionTransformerModel, TiDEModel, WaveNetModel]
 MODELS_WITH_STATIC_FEATURES_AND_KNOWN_COVARIATES = [
     m for m in MODELS_WITH_STATIC_FEATURES if m in MODELS_WITH_KNOWN_COVARIATES
 ]
@@ -30,6 +31,7 @@ TESTABLE_MODELS = [
     PatchTSTModel,
     SimpleFeedForwardModel,
     TemporalFusionTransformerModel,
+    TiDEModel,
     WaveNetModel,
 ]
 
@@ -51,7 +53,7 @@ def test_when_context_length_is_not_set_then_default_context_length_is_used(mode
 def test_given_time_limit_when_fit_called_then_models_train_correctly(model_class, time_limit, temp_model_path):
     model = model_class(
         path=temp_model_path,
-        freq="H",
+        freq="h",
         prediction_length=5,
         hyperparameters={"epochs": 2},
     )
@@ -70,7 +72,7 @@ def test_given_low_time_limit_when_fit_called_then_model_training_does_not_excee
 ):
     model = model_class(
         path=temp_model_path,
-        freq="H",
+        freq="h",
         prediction_length=5,
         hyperparameters={"epochs": 20000},
     )
@@ -84,7 +86,7 @@ def test_given_low_time_limit_when_fit_called_then_model_training_does_not_excee
 def test_when_models_saved_then_gluonts_predictors_can_be_loaded(model_class, temp_model_path):
     model = model_class(
         path=temp_model_path,
-        freq="H",
+        freq="h",
         quantile_levels=[0.1, 0.9],
         hyperparameters=DUMMY_HYPERPARAMETERS,
     )
@@ -132,7 +134,7 @@ def test_when_static_features_present_then_they_are_passed_to_dataset(model_clas
             feat_static_cat = call_kwargs["feat_static_cat"]
             feat_static_real = call_kwargs["feat_static_real"]
             assert feat_static_cat.dtype == "int64"
-            assert feat_static_real.dtype == "float32"
+            assert feat_static_real.dtype == "float64"
 
 
 @pytest.mark.parametrize("model_class", MODELS_WITH_STATIC_FEATURES)
@@ -199,7 +201,7 @@ def test_when_known_covariates_present_then_they_are_passed_to_dataset(model_cla
         finally:
             call_kwargs = patch_dataset.call_args[1]
             feat_dynamic_real = call_kwargs["feat_dynamic_real"]
-            assert feat_dynamic_real.dtype == "float32"
+            assert feat_dynamic_real.dtype == "float64"
 
 
 @pytest.mark.parametrize("model_class", MODELS_WITH_KNOWN_COVARIATES)

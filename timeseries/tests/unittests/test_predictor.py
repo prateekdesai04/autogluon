@@ -15,7 +15,6 @@ import pytest
 
 from autogluon.common import space
 from autogluon.common.utils.log_utils import verbosity2loglevel
-from autogluon.common.utils.utils import seed_everything
 from autogluon.timeseries.dataset import TimeSeriesDataFrame
 from autogluon.timeseries.dataset.ts_dataframe import ITEMID, TIMESTAMP
 from autogluon.timeseries.metrics import DEFAULT_METRIC_NAME
@@ -30,6 +29,7 @@ from .common import (
     CustomMetric,
     get_data_frame_with_variable_lengths,
     get_static_features,
+    to_supported_pandas_freq,
 )
 
 TEST_HYPERPARAMETER_SETTINGS = [
@@ -777,10 +777,11 @@ def test_given_irregular_time_series_and_no_tuning_when_predictor_called_with_fr
     assert "SimpleFeedForward" in predictor.model_names()
 
 
-@pytest.mark.parametrize("predictor_freq", ["H", "2H", "20T"])
+@pytest.mark.parametrize("predictor_freq", ["h", "2h", "20min"])
 def test_given_regular_time_series_when_predictor_called_with_freq_then_predictions_have_predictor_freq(
     temp_model_path, predictor_freq
 ):
+    predictor_freq = to_supported_pandas_freq(predictor_freq)
     df = DUMMY_TS_DATAFRAME.copy()
     predictor = TimeSeriesPredictor(
         path=temp_model_path,
@@ -792,7 +793,7 @@ def test_given_regular_time_series_when_predictor_called_with_freq_then_predicti
         hyperparameters=TEST_HYPERPARAMETER_SETTINGS[0],
     )
     predictions = predictor.predict(df)
-    assert predictions.freq == predictor_freq
+    assert pd.tseries.frequencies.to_offset(predictions.freq) == pd.tseries.frequencies.to_offset(predictor_freq)
 
 
 def test_given_irregular_time_series_when_predictor_called_without_freq_then_training_fails(
@@ -845,7 +846,7 @@ def test_given_regular_time_series_when_predictor_loaded_from_disk_then_inferred
 def test_given_short_and_long_series_in_train_data_when_fit_called_then_trainer_receives_only_long_series(
     temp_model_path, prediction_length, num_val_windows, val_step_size
 ):
-    predictor = TimeSeriesPredictor(path=temp_model_path, prediction_length=prediction_length, freq="H")
+    predictor = TimeSeriesPredictor(path=temp_model_path, prediction_length=prediction_length, freq="h")
     min_train_length = predictor._min_train_length
     min_val_length = min_train_length + prediction_length + (num_val_windows - 1) * val_step_size
 
@@ -858,7 +859,7 @@ def test_given_short_and_long_series_in_train_data_when_fit_called_then_trainer_
         "short_series_2": min_train_length + 1,
         "short_series_3": 2,
     }
-    data = get_data_frame_with_variable_lengths(item_id_to_length, freq="H")
+    data = get_data_frame_with_variable_lengths(item_id_to_length, freq="h")
     with mock.patch("autogluon.timeseries.learner.TimeSeriesLearner.fit") as learner_fit:
         predictor.fit(data, num_val_windows=num_val_windows, val_step_size=val_step_size)
         learner_fit_kwargs = learner_fit.call_args[1]
@@ -872,7 +873,7 @@ def test_given_short_and_long_series_in_train_data_when_fit_called_then_trainer_
 def test_given_short_and_long_series_in_train_data_and_tuning_data_when_fit_called_then_trainer_receives_only_long_series(
     temp_model_path, prediction_length
 ):
-    predictor = TimeSeriesPredictor(path=temp_model_path, prediction_length=prediction_length, freq="H")
+    predictor = TimeSeriesPredictor(path=temp_model_path, prediction_length=prediction_length, freq="h")
     min_train_length = predictor._min_train_length
 
     item_id_to_length = {
@@ -880,7 +881,7 @@ def test_given_short_and_long_series_in_train_data_and_tuning_data_when_fit_call
         "short_series_1": min_train_length - 1,
         "short_series_2": 2,
     }
-    data = get_data_frame_with_variable_lengths(item_id_to_length, freq="H")
+    data = get_data_frame_with_variable_lengths(item_id_to_length, freq="h")
     with mock.patch("autogluon.timeseries.learner.TimeSeriesLearner.fit") as learner_fit:
         predictor.fit(data, tuning_data=DUMMY_TS_DATAFRAME)
         learner_fit_kwargs = learner_fit.call_args[1]
@@ -918,7 +919,7 @@ def test_given_num_val_windows_too_high_for_given_data_then_num_val_windows_is_r
 def test_given_only_short_series_in_train_data_when_fit_called_then_exception_is_raised(
     temp_model_path, prediction_length, num_val_windows, val_step_size
 ):
-    predictor = TimeSeriesPredictor(path=temp_model_path, prediction_length=prediction_length, freq="H")
+    predictor = TimeSeriesPredictor(path=temp_model_path, prediction_length=prediction_length, freq="h")
     min_train_length = predictor._min_train_length
 
     item_id_to_length = {
@@ -926,7 +927,7 @@ def test_given_only_short_series_in_train_data_when_fit_called_then_exception_is
         "short_series_2": min_train_length,
         "short_series_3": 2,
     }
-    data = get_data_frame_with_variable_lengths(item_id_to_length, freq="H")
+    data = get_data_frame_with_variable_lengths(item_id_to_length, freq="h")
     with pytest.raises(ValueError, match="Please provide longer time series as train"):
         predictor.fit(data, num_val_windows=num_val_windows, val_step_size=val_step_size)
 
@@ -936,7 +937,7 @@ def test_given_only_short_series_in_train_data_when_fit_called_then_exception_is
 def test_given_only_short_series_in_train_data_then_exception_is_raised(
     temp_model_path, prediction_length, num_val_windows
 ):
-    predictor = TimeSeriesPredictor(path=temp_model_path, prediction_length=prediction_length, freq="H")
+    predictor = TimeSeriesPredictor(path=temp_model_path, prediction_length=prediction_length, freq="h")
     min_train_length = predictor._min_train_length
 
     item_id_to_length = {
@@ -944,7 +945,7 @@ def test_given_only_short_series_in_train_data_then_exception_is_raised(
         "short_series_2": min_train_length,
         "short_series_3": 2,
     }
-    data = get_data_frame_with_variable_lengths(item_id_to_length, freq="H")
+    data = get_data_frame_with_variable_lengths(item_id_to_length, freq="h")
     with pytest.raises(ValueError, match="Please provide longer time series as train"):
         predictor.fit(data, num_val_windows=num_val_windows, hyperparameters=TEST_HYPERPARAMETER_SETTINGS[0])
 
@@ -1150,38 +1151,6 @@ def test_when_predictor_fit_with_verbosity_then_verbosity_overridden_and_propaga
     for suffix in logger_suffixes:
         level = logging.getLogger(f"autogluon.timeseries.{suffix}").getEffectiveLevel()
         assert level == verbosity2loglevel(verbosity)
-
-
-@pytest.mark.parametrize("random_seed", [123, 1, 42])
-def test_when_predictor_fit_with_random_seed_then_torch_seed_set_for_all_models(temp_model_path, random_seed):
-    predictor = TimeSeriesPredictor(path=temp_model_path)
-
-    import torch
-
-    def train_save_side_effect(self, *args, **kwargs):
-        assert torch.get_rng_state().numpy()[0] == random_seed
-
-        # mess with the seed
-        seed_everything(66)
-
-        return "mock_model"
-
-    with mock.patch("autogluon.timeseries.trainer.AbstractTimeSeriesTrainer._train_and_save") as mock_train_save:
-        mock_train_save.side_effect = train_save_side_effect
-        predictor.fit(
-            DUMMY_TS_DATAFRAME,
-            hyperparameters={
-                "SeasonalNaive": {},
-                "RecursiveTabular": {
-                    "tabular_hyperparameters": {"NN_TORCH": {"proc.impute_strategy": "constant", "num_epochs": 1}},
-                },
-                "TemporalFusionTransformer": {"epochs": 1},
-                "DeepAR": {"epochs": 1},
-            },
-            random_seed=random_seed,
-            enable_ensemble=False,
-        )
-        assert mock_train_save.call_count == 4
 
 
 @pytest.mark.parametrize("random_seed", [123, 42])
@@ -1758,3 +1727,27 @@ def test_given_predictor_takes_known_only_when_feature_importance_called_with_im
                 assert np.allclose(importance, 0, atol=1e-8)
             else:
                 assert np.isfinite(importance)
+
+
+def test_when_predictor_saved_to_same_directory_then_leaderboard_works(temp_model_path):
+    data = DUMMY_TS_DATAFRAME
+    old_predictor = TimeSeriesPredictor(path=temp_model_path).fit(data, hyperparameters={"Naive": {}})
+    old_predictor.leaderboard(data)
+
+    new_predictor = TimeSeriesPredictor(path=temp_model_path).fit(data, hyperparameters={"Average": {}})
+    assert len(new_predictor.leaderboard(data)) == 1
+
+
+def test_when_predictor_saved_to_same_directory_and_loaded_then_number_of_models_matches(temp_model_path):
+    data = DUMMY_TS_DATAFRAME
+    old_predictor = TimeSeriesPredictor(path=temp_model_path).fit(data, hyperparameters={"Naive": {}, "Average": {}})
+    old_predictor.leaderboard(data)
+
+    hyperparameters = {"SeasonalNaive": {}, "SeasonalAverage": {}}
+    new_predictor = TimeSeriesPredictor(path=temp_model_path).fit(data, hyperparameters=hyperparameters)
+    loaded_predictor = TimeSeriesPredictor.load(temp_model_path)
+    assert (
+        set(new_predictor.model_names())
+        == set(loaded_predictor.model_names())
+        == set(hyperparameters).union({"WeightedEnsemble"})
+    )

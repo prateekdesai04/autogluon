@@ -32,11 +32,11 @@ install_requires = [
     "transformers[sentencepiece]",  # version range defined in `core/_setup_utils.py`
     "accelerate",  # version range defined in `core/_setup_utils.py`
     "requests>=2.21,<3",
-    "jsonschema>=4.14,<4.18",
+    "jsonschema>=4.18,<4.22",
     "seqeval>=1.2.2,<1.3.0",
     "evaluate>=0.4.0,<0.5.0",
     "timm>=0.9.5,<0.10.0",
-    "torchvision>=0.16.0,<0.17.0",
+    "torchvision>=0.16.0,<0.18.0",
     "scikit-image>=0.19.1,<0.21.0",
     "text-unidecode>=1.3,<1.4",
     "torchmetrics>=1.2.0,<1.3.0",
@@ -54,6 +54,7 @@ install_requires = [
     "tensorboard>=2.9,<3",
     "pytesseract>=0.3.9,<0.3.11",
     "nvidia-ml-py3==7.352.0",
+    "pdf2image>=1.17.0,<1.19",
 ]
 
 install_requires = ag.get_dependency_version_ranges(install_requires)
@@ -68,16 +69,7 @@ tests_require = [
     "tensorrt>=8.6.0,<8.6.2;platform_system=='Linux' and python_version<'3.11'",
 ]
 
-extras_require = {
-    "PyMuPDF": [
-        "PyMuPDF<=1.21.1",
-    ]
-}
-
-for test_package in ["PyMuPDF"]:
-    tests_require += extras_require[test_package]
-
-extras_require["tests"] = tests_require
+extras_require = {"tests": tests_require}
 
 
 if __name__ == "__main__":

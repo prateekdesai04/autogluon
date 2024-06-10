@@ -15,7 +15,6 @@ from gluonts.dataset.field_names import FieldName
 from gluonts.model.estimator import Estimator as GluonTSEstimator
 from gluonts.model.forecast import Forecast, QuantileForecast, SampleForecast
 from gluonts.model.predictor import Predictor as GluonTSPredictor
-from pandas.tseries.frequencies import to_offset
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import QuantileTransformer, StandardScaler
 
@@ -35,9 +34,6 @@ from autogluon.timeseries.utils.warning_filters import disable_root_logger, warn
 
 logger = logging.getLogger(__name__)
 gts_logger = logging.getLogger(gluonts.__name__)
-
-
-GLUONTS_SUPPORTED_OFFSETS = ["Y", "Q", "M", "W", "D", "B", "H", "T", "min", "S"]
 
 
 class SimpleGluonTSDataset(GluonTSDataset):
@@ -66,7 +62,7 @@ class SimpleGluonTSDataset(GluonTSDataset):
         self.feat_dynamic_real = self._astype(feat_dynamic_real, dtype=np.float32)
         self.past_feat_dynamic_cat = self._astype(past_feat_dynamic_cat, dtype=np.int64)
         self.past_feat_dynamic_real = self._astype(past_feat_dynamic_real, dtype=np.float32)
-        self.freq = self._to_gluonts_freq(freq)
+        self.freq = self._get_freq_for_period(freq)
 
         # Necessary to compute indptr for known_covariates at prediction time
         self.includes_future = includes_future
@@ -89,19 +85,22 @@ class SimpleGluonTSDataset(GluonTSDataset):
             return array.astype(dtype)
 
     @staticmethod
-    def _to_gluonts_freq(freq: str) -> str:
-        # FIXME: GluonTS expects a frequency string, but only supports a limited number of such strings
-        # for feature generation. If the frequency string doesn't match or is not provided, it raises an exception.
-        # Here we bypass this by issuing a default "yearly" frequency, tricking it into not producing
-        # any lags or features.
-        pd_offset = to_offset(freq)
+    def _get_freq_for_period(freq: str) -> str:
+        """Convert freq to format compatible with pd.Period.
 
-        # normalize freq str to handle peculiarities such as W-SUN
-        offset_base_alias = norm_freq_str(pd_offset)
-        if offset_base_alias not in GLUONTS_SUPPORTED_OFFSETS:
-            return "A"
+        For example, ME freq must be converted to M when creating a pd.Period.
+        """
+        offset = pd.tseries.frequencies.to_offset(freq)
+        freq_name = norm_freq_str(offset)
+        if freq_name == "SME":
+            # Replace unsupported frequency "SME" with "2W"
+            return "2W"
+        elif freq_name == "bh":
+            # Replace unsupported frequency "bh" with dummy value "Y"
+            return "Y"
         else:
-            return f"{pd_offset.n}{offset_base_alias}"
+            freq_name_for_period = {"YE": "Y", "QE": "Q", "ME": "M"}.get(freq_name, freq_name)
+            return f"{offset.n}{freq_name_for_period}"
 
     def __len__(self):
         return len(self.indptr) - 1  # noqa
@@ -161,6 +160,8 @@ class AbstractGluonTSModel(AbstractTimeSeriesModel):
     """
 
     gluonts_model_path = "gluon_ts"
+    # we pass dummy freq compatible with pandas 2.1 & 2.2 to GluonTS models
+    _dummy_gluonts_freq = "D"
     # default number of samples for prediction
     default_num_samples: int = 250
     supports_cat_covariates: bool = False
@@ -364,7 +365,7 @@ class AbstractGluonTSModel(AbstractTimeSeriesModel):
         init_args.setdefault("early_stopping_patience", 20)
         init_args.update(
             dict(
-                freq=self.freq,
+                freq=self._dummy_gluonts_freq,
                 prediction_length=self.prediction_length,
                 quantiles=self.quantile_levels,
                 callbacks=self.callbacks,

@@ -38,12 +38,17 @@ def convert_ag_metric_to_lgbm(ag_metric_name, problem_type):
 
 
 def func_generator(metric, is_higher_better, needs_pred_proba, problem_type):
-    if needs_pred_proba:
+    if problem_type in [REGRESSION, QUANTILE]:
+        # TODO: Might not work for custom quantile metrics
+        def function_template(y_hat, data):
+            y_true = data.get_label()
+            return metric.name, metric(y_true, y_hat), is_higher_better
+
+    elif needs_pred_proba:
         if problem_type == MULTICLASS:
 
             def function_template(y_hat, data):
                 y_true = data.get_label()
-                y_hat = y_hat.reshape(len(np.unique(y_true)), -1).T
                 return metric.name, metric(y_true, y_hat), is_higher_better
 
         elif problem_type == SOFTCLASS:  # metric must take in soft labels array, like soft_log_loss
@@ -66,8 +71,7 @@ def func_generator(metric, is_higher_better, needs_pred_proba, problem_type):
 
             def function_template(y_hat, data):
                 y_true = data.get_label()
-                y_hat = y_hat.reshape(len(np.unique(y_true)), -1)
-                y_hat = y_hat.argmax(axis=0)
+                y_hat = y_hat.argmax(axis=1)
                 return metric.name, metric(y_true, y_hat), is_higher_better
 
         else:
