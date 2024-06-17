@@ -47,7 +47,6 @@ jobs:
           job-name: AutoGluon-LintCheck
           command: chmod +x ./.github/workflow_scripts/lint_check.sh && ./.github/workflow_scripts/lint_check.sh
   package_diff:
-    needs: lint_check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
