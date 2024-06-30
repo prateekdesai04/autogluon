@@ -62,7 +62,7 @@ jobs:
         if: (github.event_name == 'schedule')
         uses: actions/checkout@v2
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2.0.0
+        uses: conda-incubator/setup-miniconda@v3.0.4
         with:
           activate-environment: autogluon_py3
           environment-file: .github/workflows_env/unittest_env.yml
@@ -94,7 +94,7 @@ jobs:
         if: (github.event_name == 'schedule')
         uses: actions/checkout@v2
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2.0.0
+        uses: conda-incubator/setup-miniconda@v3.0.4
         with:
           activate-environment: autogluon_py3
           environment-file: .github/workflows_env/unittest_env.yml
@@ -126,7 +126,7 @@ jobs:
         if: (github.event_name == 'schedule')
         uses: actions/checkout@v2
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2.0.0
+        uses: conda-incubator/setup-miniconda@v3.0.4
         with:
           activate-environment: autogluon_py3
           environment-file: .github/workflows_env/unittest_env.yml
@@ -191,7 +191,7 @@ jobs:
         if: (github.event_name == 'schedule')
         uses: actions/checkout@v2
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2.0.0
+        uses: conda-incubator/setup-miniconda@v3.0.4
         with:
           activate-environment: autogluon_py3
           environment-file: .github/workflows_env/unittest_env.yml
@@ -202,7 +202,9 @@ jobs:
         shell: bash -l {0}
         run: |
           wget https://raw.githubusercontent.com/Homebrew/homebrew-core/fb8323f2b170bd4ae97e1bac9bf3e2983af3fdb0/Formula/libomp.rb
-          brew unlink libomp
+          if brew list libomp &>/dev/null; then
+            brew unlink libomp
+          fi
           brew install libomp.rb
           rm libomp.rb
       - name: unit-test
@@ -233,7 +235,7 @@ jobs:
         if: (github.event_name == 'schedule')
         uses: actions/checkout@v2
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2.0.0
+        uses: conda-incubator/setup-miniconda@v3.0.4
         with:
           activate-environment: autogluon_py3
           environment-file: .github/workflows_env/unittest_env.yml
@@ -244,9 +246,14 @@ jobs:
         shell: bash -l {0}
         run: |
           wget https://raw.githubusercontent.com/Homebrew/homebrew-core/fb8323f2b170bd4ae97e1bac9bf3e2983af3fdb0/Formula/libomp.rb
-          brew unlink libomp
+          if brew list libomp &>/dev/null; then
+            brew unlink libomp
+          fi
           brew install libomp.rb
+          brew link --overwrite libomp
           rm libomp.rb
+          echo 'export DYLD_LIBRARY_PATH="/opt/homebrew/opt/libomp/lib:$DYLD_LIBRARY_PATH"' >> ~/.bash_profile
+          source ~/.bash_profile
       - name: unit-test
         shell: bash -l {0}
         run: |
@@ -274,7 +281,7 @@ jobs:
         if: (github.event_name == 'schedule')
         uses: actions/checkout@v2
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2.0.0
+        uses: conda-incubator/setup-miniconda@v3.0.4
         with:
           activate-environment: autogluon_py3
           environment-file: .github/workflows_env/unittest_env.yml
