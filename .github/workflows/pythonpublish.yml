@@ -37,11 +37,8 @@ jobs:
           do
             cd "$v"/
 
-            # Copy _setup_utils.py from core to each module for tar.gz inclusion
-            if [ "$v" != "core" ]; then
-              cp ../core/src/autogluon/core/_setup_utils.py ./_setup_utils.py
-            fi
-
+            # Copy setup utility and version files for inclusion in source distribution
+            cp ../_setup_utils.py ./_setup_utils.py
             cp ../LICENSE ./LICENSE
             cp ../NOTICE ./NOTICE
             cp ../README.md ./README.md
@@ -50,12 +47,9 @@ jobs:
 
             python setup.py sdist bdist_wheel
             twine upload dist/* --verbose
-            rm -f ./LICENSE ./NOTICE ./README.md ./CONTRIBUTING.md ./SECURITY.md
 
-            # Clean up _setup_utils.py if it was copied
-            if [ "$v" != "core" ]; then
-              rm -f ./_setup_utils.py
-            fi
+            # Clean up temporary files
+            rm -f ./_setup_utils.py ./LICENSE ./NOTICE ./README.md ./CONTRIBUTING.md ./SECURITY.md
 
             cd ..
           done

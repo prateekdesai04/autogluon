@@ -7,7 +7,18 @@ import os
 from setuptools import setup
 
 filepath = os.path.abspath(os.path.dirname(__file__))
-filepath_import = os.path.join(filepath, "..", "core", "src", "autogluon", "core", "_setup_utils.py")
+# Try to import _setup_utils in order of preference:
+# 1. Local copy (included in sdist tarball)
+# 2. Global at repo root (development environment)
+# 3. Core location (backward compatibility)
+filepath_import = os.path.join(filepath, "_setup_utils.py")
+if not os.path.exists(filepath_import):
+    # Try global location for development
+    filepath_import = os.path.join(filepath, "..", "_setup_utils.py")
+if not os.path.exists(filepath_import):
+    # Fallback to core location for backward compatibility
+    filepath_import = os.path.join(filepath, "..", "core", "src", "autogluon", "core", "_setup_utils.py")
+
 spec = importlib.util.spec_from_file_location("ag_min_dependencies", filepath_import)
 ag = importlib.util.module_from_spec(spec)
 # Identical to `from autogluon.core import _setup_utils as ag`, but works without `autogluon.core` being installed.

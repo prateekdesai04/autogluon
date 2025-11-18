@@ -1,0 +1,3 @@
+include _setup_utils.py
+include ../VERSION
+include ../VERSION.minor
